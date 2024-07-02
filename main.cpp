@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <iomanip>
+#include<fstream>
 
 struct Date { int day, month, year; };
 
@@ -21,7 +22,10 @@ private:
  public:
     Person(const std::string& name, const std::string& address, const std::string& id, const std::string& tel, int totalOrders = 0)
         : name(name), address(address), id(id), tel(tel), totalOrders(totalOrders){}
-
+    std::string getId() {return id;}
+    std::string getName() const {return name;}
+    std::string getAddress() const {return address;}
+    std::string getTel()  const {return tel;}
     void displayPerson() const {
         std::cout << std::left;
         std::cout << std::setw(15) << id << " | "
@@ -37,6 +41,15 @@ private:
             << "Address: " << address << " | "
             << "Tel: " << tel << "\n";
     }
+    // Hàm xuất dữ liệu của đối tượng ra file
+    void exportData(std::ofstream &out) const {
+        out << "ID: " << id << " | ";
+        out << "Name: " << name << " | ";
+        out << "Address: "<<address<< " | ";
+        out << "Tel: "<< tel <<"\n";
+        out << "-----------------------\n";
+    }
+    
 
     void updateDetails(const std::string& name, const std::string& address, const std::string& tel) {
         this->name = name;
@@ -62,7 +75,14 @@ public:
     std::string getShipperId() {
         return shipperId;
     }
-
+    // Hàm xuất dữ liệu của đối tượng ra file
+    void exportDataShipper(std::ofstream &out) const {
+        out << "ID Shipper: " << shipperId << " | ";
+        out << "Name Shipper: " << name << " | ";
+        out << "Tel: "<<tel<< " | ";
+        out << "Shipper Status: "<< shipperStatus <<"\n";
+        out << "-----------------------\n";
+    }
     void displayShipper() const {
 
     }
@@ -93,7 +113,7 @@ public:
     Person& getReceiver() {
         return receiver;
     }
-
+    
     void displayShipment() const {
         std::cout << std::left;
         std::cout << std::setw(15) << shipmentId << " | "
@@ -107,7 +127,22 @@ public:
         std::cout << "-----Receiver information:\n";
         receiver.displayPersonForShipment();
     }
-
+    // Hàm xuất dữ liệu của đơn hàng ra file
+    void exportDataShipment(std::ofstream &out) const {
+        out << "ID: " << shipmentId << " | ";
+        out << "Send Date: " << dateToString(sendDate) << " | ";
+        out << "Receive Date: "<<dateToString(receiveDate)<< " | ";
+        out << "Infor: "<< goodsInfo <<"\n";
+        out << "ID Sender: " << sender.getId() << " | ";
+        out << "Name Sender: " << sender.getName() << " | ";
+        out << "Address Sender: "<<sender.getAddress()<< " | ";
+        out << "Tel Sender: "<< sender.getTel() <<"\n";
+        out << "ID Receiver: " << receiver.getId() << " | ";
+        out << "Name Receiver: " << receiver.getName() << " | ";
+        out << "Address Receiver: "<<receiver.getAddress()<< " | ";
+        out << "Tel Receiver: "<< receiver.getTel() <<"\n";
+        out << "-----------------------\n";
+    }
     friend class SRSManagement;
 };
 
@@ -262,6 +297,19 @@ public:
         else {
             std::cout << role << " with ID " << id << " does not exist. Returning to main menu.\n";
             system("pause");
+        }
+    }
+    
+    void exportToFile(const std::vector<Person>& list,const std::string &filename,const std::string&role){
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Could not open the file!" << std::endl;
+            return;
+        }
+        outFile<<role<<":\n";
+        outFile<<"==============================\n";
+        for(const auto& person : list){
+            person.exportData(outFile);
         }
     }
     
@@ -514,7 +562,20 @@ public:
             system("pause");
         }
     }
+ 
+    void exportToFileShipment(const std::vector<Shipment>&list,std::string filename,std::vector<Person>& senders, std::vector<Person>& receivers){
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Could not open the file!" << std::endl;
+            return;
+        }
+        outFile<<"SHIPMENTS"<<"\n";
+        outFile<<"==============================\n";
+        for(const auto& shipment :list){
+            shipment.exportDataShipment(outFile);
+        }
 
+    }
     void sortShipmentsById(std::vector<Shipment>& list, bool ascending = true) {
         std::sort(list.begin(), list.end(),
             [ascending](const Shipment& a, const Shipment& b) {
@@ -552,6 +613,19 @@ public:
         else {
             std::cout << "Shipment with ID " << id << " not found!" << std::endl;
             system("pause");
+        }
+    }
+    
+    void exportToFileShipper(const std::vector<Shipper>& shippers,std::string filename){
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Could not open the file!" << std::endl;
+            return;
+        }
+        outFile<<"SHIPPER"<<"\n";
+        outFile<<"=================================\n";
+        for(const auto& shipper:shippers){
+            shipper.exportDataShipper(outFile);
         }
     }
 
@@ -598,7 +672,7 @@ void displaySenderMenu(SRSManagement& manager) {
         system("CLS");
         std::cout << "Sender Management Menu:\n";
         std::cout << "1. Add a Sender\n2. Print All Senders\n3. Delete a Sender\n4. Update Sender Details\n";
-        std::cout << "5. Find a Sender\n6. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Sender\n6. Export to File\n7. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -617,14 +691,20 @@ void displaySenderMenu(SRSManagement& manager) {
         case 5:
             manager.findPerson(manager.senders, "Sender");
             break;
-        case 6:
+        case 6:{
+            std::string fname;                
+            std::cout << "Enter the filename: ";
+            std::cin >> fname;
+            manager.exportToFile(manager.senders,fname, "Sender");}
+            break;
+        case 7:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 6);
+    } while (choice != 7);
 }
 
 void displayReceiverMenu(SRSManagement& manager) {
@@ -633,7 +713,7 @@ void displayReceiverMenu(SRSManagement& manager) {
         system("CLS");
         std::cout << "Receiver Management Menu:\n";
         std::cout << "1. Add a Receiver\n2. Print All Receivers\n3. Delete a Receiver\n4. Update Receiver Details\n";
-        std::cout << "5. Find a Receiver\n6. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Receiver\n6. Export to File\n7. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -652,14 +732,20 @@ void displayReceiverMenu(SRSManagement& manager) {
         case 5:
             manager.findPerson(manager.receivers, "Receiver");
             break;
-        case 6:
+        case 6:{
+            std::string fname;                
+            std::cout << "Enter the filename: ";
+            std::cin >> fname;
+            manager.exportToFile(manager.receivers,fname,"Receiver");}
+            break;    
+        case 7:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 6);
+    } while (choice != 7);
 }
 
 void displayShipmentMenu(SRSManagement& manager) {
@@ -668,7 +754,7 @@ void displayShipmentMenu(SRSManagement& manager) {
         system("CLS");
         std::cout << "Shipment Management Menu:\n";
         std::cout << "1. Add a Shipment\n2. Print All Shipments\n3. Delete a Shipment\n4. Update Shipment Details\n";
-        std::cout << "5. Find a Shipments\n6. Sort Shipments by ID\n7. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Shipments\n6. Sort Shipments by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -706,14 +792,20 @@ void displayShipmentMenu(SRSManagement& manager) {
                 std::cout << "Invalid order choice!" << std::endl;
             }
             break;
-        case 7:
+        case 7:{
+            std::string fname;                
+            std::cout << "Enter the filename: ";
+            std::cin >> fname;
+            manager.exportToFileShipment(manager.shipments,fname,manager.senders,manager.receivers);}
+            break;
+        case 8:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 7);
+    } while (choice != 8);
 }
 
 void displayShipperMenu(SRSManagement& manager) {
@@ -721,7 +813,7 @@ void displayShipperMenu(SRSManagement& manager) {
     do {
         system("CLS");
         std::cout << "Shipper Management Menu:\n";
-        std::cout << "1. Print All Senders\n2. Set status for a shipper\n3. Return to Main Menu\nEnter your choice: ";
+        std::cout << "1. Print All Shippers\n2. Set status for a Shipper\n3. Export to file list Shipper\n4. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -731,7 +823,13 @@ void displayShipperMenu(SRSManagement& manager) {
         case 2:
             manager.setShipperStatus(manager.shippers);
             break;
-        case 3:
+        case 3:{
+            std::string fname;                
+            std::cout << "Enter the filename: ";
+            std::cin >> fname;
+            manager.exportToFileShipper(manager.shippers,fname);}
+            break;   
+        case 4:
             
             return;
         default:
@@ -739,7 +837,7 @@ void displayShipperMenu(SRSManagement& manager) {
             system("pause");
             break;
         }
-    } while (choice != 3);
+    } while (choice != 4);
 }
 
 int main() {
