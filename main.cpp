@@ -3,13 +3,13 @@
 #include <string>
 #include <algorithm>
 #include <iomanip>
-#include<fstream>
+#include <fstream>
 
 struct Date { int day, month, year; };
 
-enum ShipmentStatus { Pending, InTransit, Delivered, Returned };
+enum OrderStatus { Pending, InTransit, Delivered, Returned };
 enum PaymentStatus { Unpaid, Paid };
-enum ShipperStatus { ReadyToDelivery, Delivering };
+enum ShipperStatus { ReadyToDeliver, Delivering };
 
 std::string dateToString(const Date& date) {
     return std::to_string(date.day) + "/" + std::to_string(date.month) + "/" + std::to_string(date.year);
@@ -19,37 +19,35 @@ class Person {
 private:
     std::string name, address, id, tel;
     int totalOrders;
- public:
+public:
     Person(const std::string& name, const std::string& address, const std::string& id, const std::string& tel, int totalOrders = 0)
-        : name(name), address(address), id(id), tel(tel), totalOrders(totalOrders){}
-    std::string getId() {return id;}
-    std::string getName() const {return name;}
-    std::string getAddress() const {return address;}
-    std::string getTel()  const {return tel;}
+        : name(name), address(address), id(id), tel(tel), totalOrders(totalOrders) {}
+
+    std::string getId() const { return id; }
+    std::string getName() const { return name; }
+    std::string getAddress() const { return address; }
+    std::string getTel()  const { return tel; }
+
     void displayPerson() const {
-        std::cout << std::left;
-        std::cout << std::setw(15) << id << " | "
-            << std::setw(20) << name << " | "
-            << std::setw(20) << address << " | "
-            << std::setw(20) << tel << " | "
-            << totalOrders << "\n";
+        std::cout << std::left
+            << std::setw(10) << id
+            << std::setw(20) << name
+            << std::setw(20) << address
+            << std::setw(16) << tel
+            << std::setw(10) << totalOrders << std::endl;
     }
 
-    void displayPersonForShipment() const {
-        std::cout << "ID: " << id << " | "
-            << "Name: " << name << " | "
-            << "Address: " << address << " | "
-            << "Tel: " << tel << "\n";
+    void displayPersonForOrder() const {
+        std::cout << "ID: " << id << " |" << "Name: " << name << " |" << "Address: " << address << " |" << "Tel: " << tel << "\n";
     }
     // Hàm xuất dữ liệu của đối tượng ra file
-    void exportData(std::ofstream &out) const {
+    void exportData(std::ofstream& out) const {
         out << "ID: " << id << " | ";
         out << "Name: " << name << " | ";
-        out << "Address: "<<address<< " | ";
-        out << "Tel: "<< tel <<"\n";
+        out << "Address: " << address << " | ";
+        out << "Tel: " << tel << "\n";
         out << "-----------------------\n";
     }
-    
 
     void updateDetails(const std::string& name, const std::string& address, const std::string& tel) {
         this->name = name;
@@ -57,11 +55,7 @@ private:
         this->tel = tel;
     }
 
-    std::string getId() const {
-        return id;
-    }
-
-    friend class SRSManagement;
+    friend class Management;
 };
 
 class Shipper {
@@ -72,85 +66,90 @@ public:
     Shipper(const std::string& name, const std::string& shipperId, const std::string& tel, ShipperStatus shipperStatus)
         :name(name), shipperId(shipperId), tel(tel), shipperStatus(shipperStatus) {}
 
-    std::string getShipperId() {
-        return shipperId;
-    }
+    std::string getShipperId() { return shipperId; }
     // Hàm xuất dữ liệu của đối tượng ra file
-    void exportDataShipper(std::ofstream &out) const {
+    void exportDataShipper(std::ofstream& out) const {
         out << "ID Shipper: " << shipperId << " | ";
         out << "Name Shipper: " << name << " | ";
-        out << "Tel: "<<tel<< " | ";
-        out << "Shipper Status: "<< shipperStatus <<"\n";
+        out << "Tel: " << tel << " | ";
+        out << "Shipper Status: " << shipperStatus << "\n";
         out << "-----------------------\n";
     }
-    void displayShipper() const {
 
+    void displayShipper() const {
+        std::cout << std::left
+            << std::setw(10) << shipperId
+            << std::setw(20) << name
+            << std::setw(16) << tel
+            << std::setw(10) << (shipperStatus == ReadyToDeliver ? "Ready to deliver" : "Delivering") << std::endl;
     }
 
-    friend class SRSManagement;
-
+    friend class Management;
 };
 
-class Shipment {
+class Order {
 private:
     Date sendDate, receiveDate;
     PaymentStatus paymentStatus;
-    ShipmentStatus status;
+    OrderStatus status;
     Person sender, receiver;
-    std::string goodsInfo, shipmentId;
+    std::string goodsInfo, orderId;
 public:
-    Shipment(const std::string& shipmentId, const Date& sendDate, const Date& receiveDate, const Person& sender, const Person& receiver, const std::string& goodsInfo, ShipmentStatus status, PaymentStatus paymentStatus)
-        : shipmentId(shipmentId), sendDate(sendDate), receiveDate(receiveDate), sender(sender), receiver(receiver), goodsInfo(goodsInfo), status(status), paymentStatus(paymentStatus) {}
+    Order(const std::string& orderId, const Date& sendDate, const Date& receiveDate, const Person& sender, const Person& receiver, const std::string& goodsInfo, OrderStatus status, PaymentStatus paymentStatus)
+        : orderId(orderId), sendDate(sendDate), receiveDate(receiveDate), sender(sender), receiver(receiver), goodsInfo(goodsInfo), status(status), paymentStatus(paymentStatus) {}
 
-    std::string getShipmentId() const { 
-        return shipmentId;
-    }
+    std::string getOrderId() const { return orderId; }
 
-    Person& getSender() {
-        return sender;
-    }
+    Person& getSender() { return sender; }
 
-    Person& getReceiver() {
-        return receiver;
-    }
-    
-    void displayShipment() const {
-        std::cout << std::left;
-        std::cout << std::setw(15) << shipmentId << " | "
-            << std::setw(20) << dateToString(sendDate) << " | "
-            << std::setw(20) << dateToString(receiveDate) << " | "
-            << std::setw(20) << goodsInfo << " | "
-            << std::setw(20) << (status == Pending ? "Pending" : status == InTransit ? "In Transit" : status == Delivered ? "Delivered" : "Returned") << " | "
-            << std::setw(20) << (paymentStatus == Unpaid ? "Unpaid" : "Paid") << " | ";
+    Person& getReceiver() { return receiver; }
+
+    void displayOrder() const {
+        std::cout << std::left
+            << std::setw(15) << "ID"
+            << std::setw(15) << "Send Date"
+            << std::setw(15) << "Receive Date"
+            << std::setw(15) << "Goods Info"
+            << std::setw(15) << "Status"
+            << std::setw(15) << "Payment Status" << std::endl;
+        std::cout << std::setw(15) << orderId
+            << std::setw(15) << dateToString(sendDate)
+            << std::setw(15) << dateToString(receiveDate)
+            << std::setw(15) << goodsInfo
+            << std::setw(15) << (status == Pending ? "Pending" : status == InTransit ? "In Transit" : status == Delivered ? "Delivered" : "Returned")
+            << std::setw(15) << (paymentStatus == Unpaid ? "Unpaid" : "Paid") << std::endl;
         std::cout << "-----Sender information:\n";
-        sender.displayPersonForShipment();
+        sender.displayPersonForOrder();
         std::cout << "-----Receiver information:\n";
-        receiver.displayPersonForShipment();
+        receiver.displayPersonForOrder();
+        std::cout << std::string(81, '-');
+        std::cout << "\n";
     }
     // Hàm xuất dữ liệu của đơn hàng ra file
-    void exportDataShipment(std::ofstream &out) const {
-        out << "ID: " << shipmentId << " | ";
+    void exportDataOrder(std::ofstream& out) const {
+        out << "ID: " << orderId << " | ";
         out << "Send Date: " << dateToString(sendDate) << " | ";
-        out << "Receive Date: "<<dateToString(receiveDate)<< " | ";
-        out << "Infor: "<< goodsInfo <<"\n";
+        out << "Receive Date: " << dateToString(receiveDate) << " | ";
+        out << "Infor: " << goodsInfo << "\n";
         out << "ID Sender: " << sender.getId() << " | ";
         out << "Name Sender: " << sender.getName() << " | ";
-        out << "Address Sender: "<<sender.getAddress()<< " | ";
-        out << "Tel Sender: "<< sender.getTel() <<"\n";
+        out << "Address Sender: " << sender.getAddress() << " | ";
+        out << "Tel Sender: " << sender.getTel() << "\n";
         out << "ID Receiver: " << receiver.getId() << " | ";
         out << "Name Receiver: " << receiver.getName() << " | ";
-        out << "Address Receiver: "<<receiver.getAddress()<< " | ";
-        out << "Tel Receiver: "<< receiver.getTel() <<"\n";
+        out << "Address Receiver: " << receiver.getAddress() << " | ";
+        out << "Tel Receiver: " << receiver.getTel() << "\n";
         out << "-----------------------\n";
     }
-    friend class SRSManagement;
+
+    friend class Management;
 };
 
-class SRSManagement {
+class Management {
 private:
     std::vector<Person> senders;
     std::vector<Person> receivers;
-    std::vector<Shipment> shipments;
+    std::vector<Order> orders;
     std::vector<Shipper> shippers;
 public:
     void addPerson(std::vector<Person>& list, const std::string& role) {
@@ -188,12 +187,15 @@ public:
 
     void printAllPersons(const std::vector<Person>& list, const std::string& role) const {
         system("CLS");
-        std::cout << "All " << role << "s:\n";
-        std::cout<< "ID" << std::setw(16) << " | "
-            << "Name" << std::setw(19) << " | " 
-            << "Address" << std::setw(16) << " | "
-            << "Tel" << std::setw(20) << " | "  
-            << "Total orders" << "\n";
+        std::cout << std::left
+            << std::setw(10) << "ID"
+            << std::setw(20) << "Name"
+            << std::setw(20) << "Address"
+            << std::setw(16) << "Tel"
+            << std::setw(10) << "Orders" << std::endl;
+
+        std::cout << std::string(81, '-');
+        std::cout << "\n";
         for (const auto& person : list) {
             person.displayPerson();
         }
@@ -255,7 +257,7 @@ public:
                 std::getline(std::cin, newAddress);
                 personToUpdate.updateDetails(personToUpdate.name, newAddress, personToUpdate.tel);
                 std::cout << "Address updated successfully!\n";
-                system("pause"); 
+                system("pause");
                 break;
             }
             case 3: {
@@ -264,12 +266,12 @@ public:
                 std::cin >> newTel;
                 personToUpdate.updateDetails(personToUpdate.name, personToUpdate.address, newTel);
                 std::cout << "Telephone updated successfully!\n";
-                system("pause"); 
+                system("pause");
                 break;
             }
             default:
                 std::cout << "Invalid choice!\n";
-                system("pause"); 
+                system("pause");
                 break;
             }
         }
@@ -299,27 +301,27 @@ public:
             system("pause");
         }
     }
-    
-    void exportToFile(const std::vector<Person>& list,const std::string &filename,const std::string&role){
+
+    void exportToFile(const std::vector<Person>& list, const std::string& filename, const std::string& role) {
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
             std::cerr << "Could not open the file!" << std::endl;
             return;
         }
-        outFile<<role<<":\n";
-        outFile<<"==============================\n";
-        for(const auto& person : list){
+        outFile << role << ":\n";
+        outFile << "==============================\n";
+        for (const auto& person : list) {
             person.exportData(outFile);
         }
     }
-    
-    void addShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
+
+    void addOrder(std::vector<Order>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
         system("CLS");
         int status, pstatus;
-        std::string goods, shipmentId, senderId, receiverId;
+        std::string goods, orderId, senderId, receiverId;
         Date sDate, rDate;
 
-        std::cout << "Enter the information for new Shipment" << std::endl;
+        std::cout << "Enter the information for new Order" << std::endl;
 
         auto findPersonById = [](std::vector<Person>& persons, std::string id) -> Person& {
             for (auto& person : persons) {
@@ -330,9 +332,9 @@ public:
             throw std::runtime_error("Person with ID not found.");
         };
 
-        auto findShipmentById = [&list](std::string id) -> bool {
-            for (auto& shipment : list) {
-                if (shipment.getShipmentId() == id) {
+        auto findOrderById = [&list](std::string id) -> bool {
+            for (auto& order : list) {
+                if (order.getOrderId() == id) {
                     return true;
                 }
             }
@@ -365,11 +367,11 @@ public:
             return;
         }
 
-        std::cout << "Enter the Shipment ID: ";
-        std::cin >> shipmentId;
+        std::cout << "Enter the Order ID: ";
+        std::cin >> orderId;
 
-        if (findShipmentById(shipmentId)) {
-            std::cerr << "Shipment with ID " << shipmentId << " already exists." << std::endl;
+        if (findOrderById(orderId)) {
+            std::cerr << "Order with ID " << orderId << " already exists." << std::endl;
             system("pause");
             return;
         }
@@ -378,45 +380,38 @@ public:
         std::cout << "Receive Date (day month year): "; std::cin >> rDate.day >> rDate.month >> rDate.year;
         std::cin.ignore();
         std::cout << "Goods information: "; std::getline(std::cin, goods);
-        std::cout << "Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): "; std::cin >> status;
+        std::cout << "Order Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): "; std::cin >> status;
         std::cout << "Payment Status: Unpaid (0) / Paid (1): "; std::cin >> pstatus;
 
-        Shipment newShipment(shipmentId, sDate, rDate, *sender, *receiver, goods, static_cast<ShipmentStatus>(status), static_cast<PaymentStatus>(pstatus));
+        Order newShipment(orderId, sDate, rDate, *sender, *receiver, goods, static_cast<OrderStatus>(status), static_cast<PaymentStatus>(pstatus));
         list.push_back(newShipment);
 
         sender->totalOrders++;
         receiver->totalOrders++;
 
-
-        std::cout << "Shipment added successfully!" << std::endl;
+        std::cout << "Order added successfully!" << std::endl;
         system("pause");
     }
 
-    void printAllShipments(const std::vector<Shipment> list) const {
+    void printAllOrders(const std::vector<Order> list) const {
         system("CLS");
-        std::cout << "All shipments:\n";
-        std::cout << "ID" << std::setw(16) << " | "
-            << "Send" << std::setw(19) << " | "
-            << "Receive" << std::setw(16) << " | "
-            << "Goods Info" << std::setw(20) << " | "
-            << "Status" << std::setw(20) << " | "
-            << "Payment Status" << "\n";
-        for (const auto& shipment : list) {
-            shipment.displayShipment();
+        std::cout << "All orders:\n";
+        for (const auto& order : list) {
+            order.displayOrder();
         }
         system("pause");
     }
 
-    void deleteShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
+    void deleteOrder(std::vector<Order>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
         system("CLS");
         std::string id;
-        std::cout << "Enter Shipment ID to delete: ";
+        std::cout << "Enter Order ID to delete: ";
         std::cin >> id;
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& s) { return s.getShipmentId() == id; });
+        auto it = std::find_if(list.begin(), list.end(), [id](const Order& o) { return o.getOrderId() == id; });
 
         if (it != list.end()) {
-            
+
             auto findPersonById = [](std::vector<Person>& persons, std::string id) -> Person& {
                 for (auto& person : persons) {
                     if (person.getId() == id) {
@@ -450,22 +445,22 @@ public:
             receiver->totalOrders--;
 
             list.erase(it);
-            std::cout << "Shipment with ID " << id << " deleted successfully!\n";
+            std::cout << "Order with ID " << id << " deleted successfully!\n";
             system("pause");
         }
         else {
-            std::cout << "Shipment with ID " << id << " does not exist.\n";
+            std::cout << "Order with ID " << id << " does not exist.\n";
             system("pause");
         }
     }
 
-    void updateShipment(std::vector<Shipment>& list) {
+    void updateOrder(std::vector<Order>& list) {
         system("CLS");
         std::string id;
-        std::cout << "Enter Shipment ID to update: ";
+        std::cout << "Enter Order ID to update: ";
         std::cin >> id;
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& s) { return s.shipmentId == id; });
+        auto it = std::find_if(list.begin(), list.end(), [id](const Order& o) { return o.orderId == id; });
 
         if (it != list.end()) {
             int choice;
@@ -473,7 +468,7 @@ public:
 
             while (updateAgain) {
                 system("CLS");
-                std::cout << "\nSelect field to update for Shipment ID " << id << ":" << std::endl;
+                std::cout << "\nSelect field to update for Order ID " << id << ":" << std::endl;
                 std::cout << "1. Send Date\n";
                 std::cout << "2. Receive Date\n";
                 std::cout << "3. Status\n";
@@ -490,7 +485,7 @@ public:
                     std::cout << "Enter new Send Date (day month year): ";
                     std::cin >> newSendDate.day >> newSendDate.month >> newSendDate.year;
                     it->sendDate = newSendDate;
-                    std::cout << "Shipment with ID " << id << "'s Send Date updated successfully!" << std::endl;
+                    std::cout << "Order with ID " << id << "'s Send Date updated successfully!" << std::endl;
                     system("pause");
                     break;
                 }
@@ -500,21 +495,21 @@ public:
                     std::cout << "Enter new Receive Date (day month year): ";
                     std::cin >> newReceiveDate.day >> newReceiveDate.month >> newReceiveDate.year;
                     it->receiveDate = newReceiveDate;
-                    std::cout << "Shipment with ID " << id << "'s Receive Date updated successfully!" << std::endl;
+                    std::cout << "Order with ID " << id << "'s Receive Date updated successfully!" << std::endl;
                     system("pause");
                     break;
                 }
                 case 3: {
-                    std::cout << "Enter new Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): ";
-                    int statusChoice; std::cin >> statusChoice; it->status = static_cast<ShipmentStatus>(statusChoice);
-                    std::cout << "Shipment with ID " << id << "'s Status updated successfully!" << std::endl;
+                    std::cout << "Enter new Order Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): ";
+                    int statusChoice; std::cin >> statusChoice; it->status = static_cast<OrderStatus>(statusChoice);
+                    std::cout << "Order with ID " << id << "'s Status updated successfully!" << std::endl;
                     system("pause");
                     break;
                 }
                 case 4: {
                     std::cout << "Enter new Payment Status: Unpaid (0) / Paid (1): ";
                     int pstatusChoice; std::cin >> pstatusChoice; it->paymentStatus = static_cast<PaymentStatus>(pstatusChoice);
-                    std::cout << "Shipment with ID " << id << "'s Payment Status updated successfully!" << std::endl;
+                    std::cout << "Order with ID " << id << "'s Payment Status updated successfully!" << std::endl;
                     system("pause");
                     break;
                 }
@@ -524,7 +519,7 @@ public:
                     std::cin.ignore();
                     std::getline(std::cin, newGoodsInfo);
                     it->goodsInfo = newGoodsInfo;
-                    std::cout << "Shipment with ID " << id << "'s Goods Info updated successfully!" << std::endl;
+                    std::cout << "Order with ID " << id << "'s Goods Info updated successfully!" << std::endl;
                     system("pause");
                     break;
                 }
@@ -535,66 +530,113 @@ public:
                     std::cout << "Invalid choice. Please try again." << std::endl;
                 }
             }
-            std::cout << "Shipment with ID " << id << " updated successfully!" << std::endl;
+            std::cout << "Order with ID " << id << " updated successfully!" << std::endl;
         }
         else {
-            std::cout << "Shipment with ID " << id << " not found!" << std::endl;
+            std::cout << "Order with ID " << id << " not found!" << std::endl;
             system("pause");
         }
     }
 
-    void findShipment(std::vector<Shipment>& list) const {
+    void findOrder(std::vector<Order>& list) const {
         system("CLS");
         std::string id;
-        std::cout << "Enter Shipment ID to find: ";
+        std::cout << "Enter Order ID to find: ";
         std::cin >> id;
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& s) {
-            return s.getShipmentId() == id;
+        auto it = std::find_if(list.begin(), list.end(), [id](const Order& o) {
+            return o.getOrderId() == id;
             });
 
         if (it != list.end()) {
-            it->displayShipment();
+            it->displayOrder();
             system("pause");
         }
         else {
-            std::cout << "Shipment with ID " << id << " does not exist. Returning to main menu.\n";
+            std::cout << "Order with ID " << id << " does not exist. Returning to main menu.\n";
             system("pause");
         }
     }
- 
-    void exportToFileShipment(const std::vector<Shipment>&list,std::string filename,std::vector<Person>& senders, std::vector<Person>& receivers){
+
+    void exportToFileOrder(const std::vector<Order>& list, std::string filename, std::vector<Person>& senders, std::vector<Person>& receivers) {
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
             std::cerr << "Could not open the file!" << std::endl;
             return;
         }
-        outFile<<"SHIPMENTS"<<"\n";
-        outFile<<"==============================\n";
-        for(const auto& shipment :list){
-            shipment.exportDataShipment(outFile);
+        outFile << "ORDERS" << "\n";
+        outFile << "==============================\n";
+        for (const auto& order : list) {
+            order.exportDataOrder(outFile);
         }
-
     }
-    void sortShipmentsById(std::vector<Shipment>& list, bool ascending = true) {
+
+    void sortOrdersById(std::vector<Order>& list, bool ascending = true) {
         std::sort(list.begin(), list.end(),
-            [ascending](const Shipment& a, const Shipment& b) {
-                return ascending ? (a.shipmentId < b.shipmentId) : (a.shipmentId > b.shipmentId);
+            [ascending](const Order& a, const Order& b) {
+                return ascending ? (a.orderId < b.orderId) : (a.orderId > b.orderId);
             });
         return;
     }
 
+    void sortPersonById(std::vector<Person>& list, bool ascending = true) {
+        std::sort(list.begin(), list.end(),
+            [ascending](const Person& a, const Person& b) {
+                return ascending ? (a.getId() < b.getId()) : (a.getId() > b.getId());
+            });
+        return;
+    }
+
+    void printAllShippers(const std::vector<Shipper>& list) const {
+        system("CLS");
+        std::cout << std::left
+            << std::setw(10) << "ID"
+            << std::setw(20) << "Name"
+            << std::setw(16) << "Tel"
+            << std::setw(10) << "Shipper Status" << std::endl;
+        std::cout << std::string(81, '-');
+        std::cout << "\n";
+        for (const auto& person : list) {
+            person.displayShipper();
+        }
+        system("pause");
+    }
+
     void addShipper() {
-        shippers.push_back(Shipper("Nguyễn Việt Anh", "01", "0866986596", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Phùng Thanh Thuỷ", "02", "0123888888", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Trần Công Tài", "03", "0234999999", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Nguyễn Thị Tú", "04", "0345777777", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Phùng Anh Tài", "05", "0456111111", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Trần Việt Tú", "06", "0567222222", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Nguyễn Công Thanh", "07", "0678333333", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Phùng Việt Thuỷ", "08", "0789444444", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Trần Thị Anh", "09", "0866555555", ShipperStatus::ReadyToDelivery));
-        shippers.push_back(Shipper("Nguyễn Thanh Tú", "10", "9999999999", ShipperStatus::ReadyToDelivery));
+        shippers.push_back(Shipper("Nguyen Viet Anh", "01", "0866986596", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Thanh Thuy", "02", "0123888888", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Cong Tai", "03", "0234999999", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Thi Tu", "04", "0345777777", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Anh Tai", "05", "0456111111", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Viet Tu", "06", "0567222222", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Cong Thanh", "07", "0678333333", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Viet Thuy", "08", "0789444444", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Thi Anh", "09", "0866555555", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Thanh Tu", "10", "9999999999", ShipperStatus::ReadyToDeliver));
+    }
+    void addSenders() {
+        senders.push_back(Person("John Smith", "Hometown", "002", "0123456789", 0));
+        senders.push_back(Person("Emily Johnson", "Springfield", "003", "0987654321", 0));
+        senders.push_back(Person("Michael Brown", "Lakeview", "004", "0765432109", 0));
+        senders.push_back(Person("Sarah Davis", "Meadow Hills", "005", "0456789123", 0));
+        senders.push_back(Person("Daniel Wilson", "Pine Grove", "006", "0543219876", 0));
+        senders.push_back(Person("Jessica Martinez", "Sunset Valley", "007", "0678912345", 0));
+        senders.push_back(Person("Christopher Garcia", "Riverbend", "008", "0890123456", 0));
+        senders.push_back(Person("Amanda Rodriguez", "Clearwater", "009", "0987654321", 0));
+        senders.push_back(Person("James Miller", "Cedar Ridge", "010", "0102030405", 0));
+        senders.push_back(Person("Ashley Jackson", "Oakwood", "011", "0112233445", 0));
+    }
+    void addReceivers() {
+        receivers.push_back(Person("Matthew White", "Green Acres", "012", "0123245678", 0));
+        receivers.push_back(Person("Elizabeth Lopez", "Golden Heights", "013", "0133456789", 0));
+        receivers.push_back(Person("Joshua Hill", "Willow Creek", "014", "0144567890", 0));
+        receivers.push_back(Person("Lauren Scott", "Silver Springs", "015", "0155678901", 0));
+        receivers.push_back(Person("Andrew King", "Maple Grove", "016", "0166789012", 0));
+        receivers.push_back(Person("Olivia Young", "Peachtree", "017", "0177890123", 0));
+        receivers.push_back(Person("Ryan Clark", "Hillcrest", "018", "0188901234", 0));
+        receivers.push_back(Person("Sophia Lewis", "Birchwood", "019", "0199012345", 0));
+        receivers.push_back(Person("David Walker", "Lakeside", "020", "0200123456", 0));
+        receivers.push_back(Person("Grace Hall", "Valley View", "021", "0211234567", 0));
     }
 
     void setShipperStatus(std::vector<Shipper>& shippers) {
@@ -603,45 +645,45 @@ public:
         std::cout << "Enter Shipper ID to update status: ";
         std::cin >> id;
 
-        auto it = std::find_if(shippers.begin(), shippers.end(), [id](const Shipper& s) { return s.shipperId == id; });
+        auto it = std::find_if(shippers.begin(), shippers.end(), [id](const Shipper& o) { return o.shipperId == id; });
         if (it != shippers.end()) {
-            std::cout << "Enter new Shipper Status: ReadyToDelivery (0) / Delivering (1): ";
+            std::cout << "Enter new Shipper Status: ReadyToDeliver (0) / Delivering (1): ";
             int newStatus; std::cin >> newStatus; it->shipperStatus = static_cast<ShipperStatus>(newStatus);
             std::cout << "Shipper with ID " << id << "'s status updated successfully!" << std::endl;
             system("pause");
         }
         else {
-            std::cout << "Shipment with ID " << id << " not found!" << std::endl;
+            std::cout << "Order with ID " << id << " not found!" << std::endl;
             system("pause");
         }
     }
-    
-    void exportToFileShipper(const std::vector<Shipper>& shippers,std::string filename){
+
+    void exportToFileShipper(const std::vector<Shipper>& shippers, std::string filename) {
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
             std::cerr << "Could not open the file!" << std::endl;
             return;
         }
-        outFile<<"SHIPPER"<<"\n";
-        outFile<<"=================================\n";
-        for(const auto& shipper:shippers){
+        outFile << "SHIPPER" << "\n";
+        outFile << "=================================\n";
+        for (const auto& shipper : shippers) {
             shipper.exportDataShipper(outFile);
         }
     }
 
-    friend void displayMenuSRManagement(SRSManagement& manager);
-    friend void displaySenderMenu(SRSManagement& manager);
-    friend void displayReceiverMenu(SRSManagement& manager);
-    friend void displayShipmentMenu(SRSManagement& manager);
-    friend void displayShipperMenu(SRSManagement& manager);
+    friend void displayMenuSRManagement(Management& manager);
+    friend void displaySenderMenu(Management& manager);
+    friend void displayReceiverMenu(Management& manager);
+    friend void displayShipmentMenu(Management& manager);
+    friend void displayShipperMenu(Management& manager);
 };
 
-void displayMenuSRManagement(SRSManagement& manager) {
+void displayMenuSRManagement(Management& manager) {
     int choice;
     do {
         system("CLS");
         std::cout << "Main Menu:\n";
-        std::cout << "1. Sender Management\n2. Receiver Management\n3. Shipment Management\n4. Shipper Management\n5. Exit\nEnter your choice: ";
+        std::cout << "1. Sender Management\n2. Receiver Management\n3. Order Management\n4. Shipper Management\n5. Exit\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -666,13 +708,13 @@ void displayMenuSRManagement(SRSManagement& manager) {
     } while (choice != 5);
 }
 
-void displaySenderMenu(SRSManagement& manager) {
+void displaySenderMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
         std::cout << "Sender Management Menu:\n";
         std::cout << "1. Add a Sender\n2. Print All Senders\n3. Delete a Sender\n4. Update Sender Details\n";
-        std::cout << "5. Find a Sender\n6. Export to File\n7. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Sender\n6. Sort Sender by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -691,29 +733,49 @@ void displaySenderMenu(SRSManagement& manager) {
         case 5:
             manager.findPerson(manager.senders, "Sender");
             break;
-        case 6:{
-            std::string fname;                
+        case 6:
+            system("CLS");
+            int personChoice;
+            std::cout << "1. Ascending\n2. Descending" << std::endl;
+            std::cout << "Enter your choice: "; std::cin >> personChoice;
+            if (personChoice == 1) {
+                manager.sortPersonById(manager.senders, personChoice == 1);
+                std::cout << "Senders sorted by ID (Ascending)!" << std::endl;
+                system("pause");
+            }
+            else if (personChoice == 2) {
+                manager.sortPersonById(manager.senders, personChoice == 0);
+                std::cout << "Senders sorted by ID (Descending)!" << std::endl;
+                system("pause");
+            }
+            else {
+                std::cout << "Invalid order choice!" << std::endl;
+            }
+            break;
+        case 7: {
+            std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFile(manager.senders,fname, "Sender");}
-            break;
-        case 7:
+            manager.exportToFile(manager.senders, fname, "Sender"); }
+              system("pause");
+              break;
+        case 8:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 7);
+    } while (choice != 8);
 }
 
-void displayReceiverMenu(SRSManagement& manager) {
+void displayReceiverMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
         std::cout << "Receiver Management Menu:\n";
         std::cout << "1. Add a Receiver\n2. Print All Receivers\n3. Delete a Receiver\n4. Update Receiver Details\n";
-        std::cout << "5. Find a Receiver\n6. Export to File\n7. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Receiver\n6. Sort Receivers by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -732,46 +794,66 @@ void displayReceiverMenu(SRSManagement& manager) {
         case 5:
             manager.findPerson(manager.receivers, "Receiver");
             break;
-        case 6:{
-            std::string fname;                
+        case 6:
+            system("CLS");
+            int personChoice;
+            std::cout << "1. Ascending\n2. Descending" << std::endl;
+            std::cout << "Enter your choice: "; std::cin >> personChoice;
+            if (personChoice == 1) {
+                manager.sortPersonById(manager.receivers, personChoice == 1);
+                std::cout << "Receivers sorted by ID (Ascending)!" << std::endl;
+                system("pause");
+            }
+            else if (personChoice == 2) {
+                manager.sortPersonById(manager.receivers, personChoice == 0);
+                std::cout << "Receivers sorted by ID (Descending)!" << std::endl;
+                system("pause");
+            }
+            else {
+                std::cout << "Invalid order choice!" << std::endl;
+            }
+            break;
+        case 7: {
+            std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFile(manager.receivers,fname,"Receiver");}
-            break;    
-        case 7:
+            manager.exportToFile(manager.receivers, fname, "Receiver"); }
+              system("pause");
+              break;
+        case 8:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 7);
+    } while (choice != 8);
 }
 
-void displayShipmentMenu(SRSManagement& manager) {
+void displayShipmentMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Shipment Management Menu:\n";
-        std::cout << "1. Add a Shipment\n2. Print All Shipments\n3. Delete a Shipment\n4. Update Shipment Details\n";
-        std::cout << "5. Find a Shipments\n6. Sort Shipments by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
+        std::cout << "Order Management Menu:\n";
+        std::cout << "1. Add a Order\n2. Print All Orders\n3. Delete a Order\n4. Update Order Details\n";
+        std::cout << "5. Find a Orders\n6. Sort Orders by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
         case 1:
-            manager.addShipment(manager.shipments, manager.senders, manager.receivers);
+            manager.addOrder(manager.orders, manager.senders, manager.receivers);
             break;
         case 2:
-            manager.printAllShipments(manager.shipments);
+            manager.printAllOrders(manager.orders);
             break;
         case 3:
-            manager.deleteShipment(manager.shipments, manager.senders, manager.receivers);
+            manager.deleteOrder(manager.orders, manager.senders, manager.receivers);
             break;
         case 4:
-            manager.updateShipment(manager.shipments);
+            manager.updateOrder(manager.orders);
             break;
         case 5:
-            manager.findShipment(manager.shipments);
+            manager.findOrder(manager.orders);
             break;
         case 6:
             system("CLS");
@@ -779,24 +861,25 @@ void displayShipmentMenu(SRSManagement& manager) {
             std::cout << "1. Ascending\n2. Descending" << std::endl;
             std::cout << "Enter your choice: "; std::cin >> orderChoice;
             if (orderChoice == 1) {
-                manager.sortShipmentsById(manager.shipments, orderChoice == 1);
-                std::cout << "Shipments sorted by ID (Ascending)!" << std::endl;
+                manager.sortOrdersById(manager.orders, orderChoice == 1);
+                std::cout << "Orders sorted by ID (Ascending)!" << std::endl;
                 system("pause");
             }
             else if (orderChoice == 2) {
-                manager.sortShipmentsById(manager.shipments, orderChoice == 0);
-                std::cout << "Shipments sorted by ID (Descending)!" << std::endl;
+                manager.sortOrdersById(manager.orders, orderChoice == 0);
+                std::cout << "Orders sorted by ID (Descending)!" << std::endl;
                 system("pause");
             }
             else {
                 std::cout << "Invalid order choice!" << std::endl;
             }
             break;
-        case 7:{
-            std::string fname;                
+        case 7: {
+            std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFileShipment(manager.shipments,fname,manager.senders,manager.receivers);}
+            manager.exportToFileOrder(manager.orders, fname, manager.senders, manager.receivers); }
+            system("pause");
             break;
         case 8:
             return;
@@ -808,7 +891,7 @@ void displayShipmentMenu(SRSManagement& manager) {
     } while (choice != 8);
 }
 
-void displayShipperMenu(SRSManagement& manager) {
+void displayShipperMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
@@ -818,19 +901,19 @@ void displayShipperMenu(SRSManagement& manager) {
 
         switch (choice) {
         case 1:
-            //Hàm printAllShipers
+            manager.printAllShippers(manager.shippers);
             break;
         case 2:
             manager.setShipperStatus(manager.shippers);
             break;
-        case 3:{
-            std::string fname;                
+        case 3: {
+            std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFileShipper(manager.shippers,fname);}
-            break;   
+            manager.exportToFileShipper(manager.shippers, fname); }
+              break;
         case 4:
-            
+
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
@@ -841,8 +924,10 @@ void displayShipperMenu(SRSManagement& manager) {
 }
 
 int main() {
-    SRSManagement srsm;
-    srsm.addShipper();
-    displayMenuSRManagement(srsm);
+    Management manager;
+    manager.addShipper(); //example
+    manager.addSenders(); //example
+    manager.addReceivers(); //example
+    displayMenuSRManagement(manager);
     return 0;
 }
