@@ -100,6 +100,9 @@ public:
 
     std::string getOrderId() const { return orderId; }
 
+    const Date& getSendDate() const { return sendDate; }
+    const Date& getReceiveDate() const { return receiveDate; }
+
     Person& getSender() { return sender; }
 
     Person& getReceiver() { return receiver; }
@@ -122,7 +125,7 @@ public:
         sender.displayPersonForOrder();
         std::cout << "-----Receiver information:\n";
         receiver.displayPersonForOrder();
-        std::cout << std::string(81, '-');
+        std::cout << std::string(100, '-');
         std::cout << "\n";
     }
     // Hàm xuất dữ liệu của đơn hàng ra file
@@ -302,6 +305,14 @@ public:
         }
     }
 
+    void sortPersonById(std::vector<Person>& list, bool ascending = true) {
+        std::sort(list.begin(), list.end(),
+            [ascending](const Person& a, const Person& b) {
+                return ascending ? (a.getId() < b.getId()) : (a.getId() > b.getId());
+            });
+        return;
+    }
+
     void exportToFile(const std::vector<Person>& list, const std::string& filename, const std::string& role) {
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
@@ -314,7 +325,7 @@ public:
             person.exportData(outFile);
         }
     }
-
+    //---------//
     void addOrder(std::vector<Order>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
         system("CLS");
         int status, pstatus;
@@ -579,14 +590,18 @@ public:
         return;
     }
 
-    void sortPersonById(std::vector<Person>& list, bool ascending = true) {
-        std::sort(list.begin(), list.end(),
-            [ascending](const Person& a, const Person& b) {
-                return ascending ? (a.getId() < b.getId()) : (a.getId() > b.getId());
-            });
-        return;
-    }
+    int compareDates(const Date& d1, const Date& d2) {
+    if (d1.year != d2.year) return d1.year < d2.year;
+    if (d1.month != d2.month) return d1.month < d2.month;
+    return d1.day < d2.day;
+}
 
+    void sortOrdersByDate(std::vector<Order>& orders, bool ascending = true) {
+    std::sort(orders.begin(), orders.end(), [this, ascending](const Order& a, const Order& b) {
+        return ascending ? compareDates(a.getSendDate(), b.getSendDate()) : compareDates(b.getSendDate(), a.getSendDate());
+    });
+}
+    //---------//
     void printAllShippers(const std::vector<Shipper>& list) const {
         system("CLS");
         std::cout << std::left
@@ -600,43 +615,6 @@ public:
             person.displayShipper();
         }
         system("pause");
-    }
-
-    void addShipper() {
-        shippers.push_back(Shipper("Nguyen Viet Anh", "01", "0866986596", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Thanh Thuy", "02", "0123888888", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Cong Tai", "03", "0234999999", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Thi Tu", "04", "0345777777", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Anh Tai", "05", "0456111111", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Viet Tu", "06", "0567222222", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Cong Thanh", "07", "0678333333", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Viet Thuy", "08", "0789444444", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Thi Anh", "09", "0866555555", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Thanh Tu", "10", "9999999999", ShipperStatus::ReadyToDeliver));
-    }
-    void addSenders() {
-        senders.push_back(Person("John Smith", "Hometown", "002", "0123456789", 0));
-        senders.push_back(Person("Emily Johnson", "Springfield", "003", "0987654321", 0));
-        senders.push_back(Person("Michael Brown", "Lakeview", "004", "0765432109", 0));
-        senders.push_back(Person("Sarah Davis", "Meadow Hills", "005", "0456789123", 0));
-        senders.push_back(Person("Daniel Wilson", "Pine Grove", "006", "0543219876", 0));
-        senders.push_back(Person("Jessica Martinez", "Sunset Valley", "007", "0678912345", 0));
-        senders.push_back(Person("Christopher Garcia", "Riverbend", "008", "0890123456", 0));
-        senders.push_back(Person("Amanda Rodriguez", "Clearwater", "009", "0987654321", 0));
-        senders.push_back(Person("James Miller", "Cedar Ridge", "010", "0102030405", 0));
-        senders.push_back(Person("Ashley Jackson", "Oakwood", "011", "0112233445", 0));
-    }
-    void addReceivers() {
-        receivers.push_back(Person("Matthew White", "Green Acres", "012", "0123245678", 0));
-        receivers.push_back(Person("Elizabeth Lopez", "Golden Heights", "013", "0133456789", 0));
-        receivers.push_back(Person("Joshua Hill", "Willow Creek", "014", "0144567890", 0));
-        receivers.push_back(Person("Lauren Scott", "Silver Springs", "015", "0155678901", 0));
-        receivers.push_back(Person("Andrew King", "Maple Grove", "016", "0166789012", 0));
-        receivers.push_back(Person("Olivia Young", "Peachtree", "017", "0177890123", 0));
-        receivers.push_back(Person("Ryan Clark", "Hillcrest", "018", "0188901234", 0));
-        receivers.push_back(Person("Sophia Lewis", "Birchwood", "019", "0199012345", 0));
-        receivers.push_back(Person("David Walker", "Lakeside", "020", "0200123456", 0));
-        receivers.push_back(Person("Grace Hall", "Valley View", "021", "0211234567", 0));
     }
 
     void setShipperStatus(std::vector<Shipper>& shippers) {
@@ -671,14 +649,51 @@ public:
         }
     }
 
-    friend void displayMenuSRManagement(Management& manager);
+    void addSenders() {
+        senders.push_back(Person("John Smith", "Hometown", "002", "0123456789", 0));
+        senders.push_back(Person("Emily Johnson", "Springfield", "003", "0987654321", 0));
+        senders.push_back(Person("Michael Brown", "Lakeview", "004", "0765432109", 0));
+        senders.push_back(Person("Sarah Davis", "Meadow Hills", "005", "0456789123", 0));
+        senders.push_back(Person("Daniel Wilson", "Pine Grove", "006", "0543219876", 0));
+        senders.push_back(Person("Jessica Martinez", "Sunset Valley", "007", "0678912345", 0));
+        senders.push_back(Person("Christopher Garcia", "Riverbend", "008", "0890123456", 0));
+        senders.push_back(Person("Amanda Rodriguez", "Clearwater", "009", "0987654321", 0));
+        senders.push_back(Person("James Miller", "Cedar Ridge", "010", "0102030405", 0));
+        senders.push_back(Person("Ashley Jackson", "Oakwood", "011", "0112233445", 0));
+    }
+    void addReceivers() {
+        receivers.push_back(Person("Matthew White", "Green Acres", "012", "0123245678", 0));
+        receivers.push_back(Person("Elizabeth Lopez", "Golden Heights", "013", "0133456789", 0));
+        receivers.push_back(Person("Joshua Hill", "Willow Creek", "014", "0144567890", 0));
+        receivers.push_back(Person("Lauren Scott", "Silver Springs", "015", "0155678901", 0));
+        receivers.push_back(Person("Andrew King", "Maple Grove", "016", "0166789012", 0));
+        receivers.push_back(Person("Olivia Young", "Peachtree", "017", "0177890123", 0));
+        receivers.push_back(Person("Ryan Clark", "Hillcrest", "018", "0188901234", 0));
+        receivers.push_back(Person("Sophia Lewis", "Birchwood", "019", "0199012345", 0));
+        receivers.push_back(Person("David Walker", "Lakeside", "020", "0200123456", 0));
+        receivers.push_back(Person("Grace Hall", "Valley View", "021", "0211234567", 0));
+    }
+    void addShipper() {
+        shippers.push_back(Shipper("Nguyen Viet Anh", "01", "0866986596", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Thanh Thuy", "02", "0123888888", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Cong Tai", "03", "0234999999", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Thi Tu", "04", "0345777777", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Anh Tai", "05", "0456111111", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Viet Tu", "06", "0567222222", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Cong Thanh", "07", "0678333333", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Phung Viet Thuy", "08", "0789444444", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Tran Thi Anh", "09", "0866555555", ShipperStatus::ReadyToDeliver));
+        shippers.push_back(Shipper("Nguyen Thanh Tu", "10", "9999999999", ShipperStatus::ReadyToDeliver));
+    }
+
+    friend void displayMenuManagement(Management& manager);
     friend void displaySenderMenu(Management& manager);
     friend void displayReceiverMenu(Management& manager);
-    friend void displayShipmentMenu(Management& manager);
+    friend void displayOrderMenu(Management& manager);
     friend void displayShipperMenu(Management& manager);
 };
 
-void displayMenuSRManagement(Management& manager) {
+void displayMenuManagement(Management& manager) {
     int choice;
     do {
         system("CLS");
@@ -694,7 +709,7 @@ void displayMenuSRManagement(Management& manager) {
             displayReceiverMenu(manager);
             break;
         case 3:
-            displayShipmentMenu(manager);
+            displayOrderMenu(manager);
         case 4:
             displayShipperMenu(manager);
         case 5:
@@ -830,13 +845,13 @@ void displayReceiverMenu(Management& manager) {
     } while (choice != 8);
 }
 
-void displayShipmentMenu(Management& manager) {
+void displayOrderMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
         std::cout << "Order Management Menu:\n";
         std::cout << "1. Add a Order\n2. Print All Orders\n3. Delete a Order\n4. Update Order Details\n";
-        std::cout << "5. Find a Orders\n6. Sort Orders by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
+        std::cout << "5. Find a Orders\n6. Sort Orders by ID\n7. Sort Orders by Date\n8. Export to File\n9. Return to Main Menu\nEnter your choice: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -861,12 +876,12 @@ void displayShipmentMenu(Management& manager) {
             std::cout << "1. Ascending\n2. Descending" << std::endl;
             std::cout << "Enter your choice: "; std::cin >> orderChoice;
             if (orderChoice == 1) {
-                manager.sortOrdersById(manager.orders, orderChoice == 1);
+                manager.sortOrdersById(manager.orders, true);
                 std::cout << "Orders sorted by ID (Ascending)!" << std::endl;
                 system("pause");
             }
             else if (orderChoice == 2) {
-                manager.sortOrdersById(manager.orders, orderChoice == 0);
+                manager.sortOrdersById(manager.orders, false);
                 std::cout << "Orders sorted by ID (Descending)!" << std::endl;
                 system("pause");
             }
@@ -874,21 +889,41 @@ void displayShipmentMenu(Management& manager) {
                 std::cout << "Invalid order choice!" << std::endl;
             }
             break;
-        case 7: {
+        case 7:
+            system("CLS");
+            int dateChoice;
+            std::cout << "1. Ascending\n2. Descending" << std::endl;
+            std::cout << "Enter your choice: "; std::cin >> dateChoice;
+            if (dateChoice == 1) {
+                manager.sortOrdersByDate(manager.orders, true);
+                std::cout << "Orders sorted by Date (Ascending)!" << std::endl;
+                system("pause");
+            }
+            else if (dateChoice == 2) {
+                manager.sortOrdersByDate(manager.orders, false);
+                std::cout << "Orders sorted by Date (Descending)!" << std::endl;
+                system("pause");
+            }
+            else {
+                std::cout << "Invalid date choice!" << std::endl;
+            }
+            break;
+        case 8: {
             std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFileOrder(manager.orders, fname, manager.senders, manager.receivers); }
-            system("pause");
-            break;
-        case 8:
+            manager.exportToFileOrder(manager.orders, fname, manager.senders, manager.receivers);
+        }
+              system("pause");
+              break;
+        case 9:
             return;
         default:
             std::cout << "Invalid choice! Please try again.\n";
             system("pause");
             break;
         }
-    } while (choice != 8);
+    } while (choice != 9);
 }
 
 void displayShipperMenu(Management& manager) {
@@ -928,6 +963,6 @@ int main() {
     manager.addShipper(); //example
     manager.addSenders(); //example
     manager.addReceivers(); //example
-    displayMenuSRManagement(manager);
+    displayMenuManagement(manager);
     return 0;
 }
