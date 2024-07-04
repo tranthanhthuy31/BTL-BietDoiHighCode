@@ -697,8 +697,15 @@ void displayMenuManagement(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Main Menu:\n";
-        std::cout << "1. Sender Management\n2. Receiver Management\n3. Order Management\n4. Shipper Management\n5. Exit\nEnter your choice: ";
+        std::cout << "\t\t  BIET DOI HIGH CODE\t" << std::endl;
+        std::cout << "====================MENU-MANAGEMENT===================\n";
+        std::cout << "==               1.Sender Management                ==\n";
+        std::cout << "==               2.Receiver Management              ==\n";
+        std::cout << "==               3.Order Management                 ==\n";
+        std::cout << "==               4.Shipper Management               ==\n";
+        std::cout << "==               5.Exit                             ==\n";
+        std::cout << "======================================================\n";
+        std::cout <<" Enter your choice:"; 
         std::cin >> choice;
 
         switch (choice) {
@@ -710,8 +717,10 @@ void displayMenuManagement(Management& manager) {
             break;
         case 3:
             displayOrderMenu(manager);
+            break;
         case 4:
             displayShipperMenu(manager);
+            break;
         case 5:
             std::cout << "Exiting...\n";
             break;
@@ -727,9 +736,18 @@ void displaySenderMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Sender Management Menu:\n";
-        std::cout << "1. Add a Sender\n2. Print All Senders\n3. Delete a Sender\n4. Update Sender Details\n";
-        std::cout << "5. Find a Sender\n6. Sort Sender by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
+        std::cout << "\t\t  BIET DOI HIGH CODE\t" << std::endl;
+        std::cout << "====================SENDER-MANAGEMENT===================\n";
+        std::cout << "==               1.Add Sender                         ==\n";
+        std::cout << "==               2.Print Sender List                  ==\n";
+        std::cout << "==               3.Delete Sender By ID                ==\n";
+        std::cout << "==               4.Update Sender By ID                ==\n";
+        std::cout << "==               5.Find Sender By ID                  ==\n";
+        std::cout << "==               6.Sort Sender List By ID             ==\n";
+        std::cout << "==               7.Export Sender List To File         ==\n";
+        std::cout << "==               8.Return To Main Menu                ==\n";
+        std::cout << "========================================================\n";
+        std::cout <<" Enter your choice:"; 
         std::cin >> choice;
 
         switch (choice) {
@@ -768,10 +786,12 @@ void displaySenderMenu(Management& manager) {
             }
             break;
         case 7: {
+            system("CLS");
             std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFile(manager.senders, fname, "Sender"); }
+            manager.exportToFile(manager.senders, fname, "Sender");
+            std::cout<<"\nExport File Successfully !\n"; }
               system("pause");
               break;
         case 8:
@@ -788,9 +808,18 @@ void displayReceiverMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Receiver Management Menu:\n";
-        std::cout << "1. Add a Receiver\n2. Print All Receivers\n3. Delete a Receiver\n4. Update Receiver Details\n";
-        std::cout << "5. Find a Receiver\n6. Sort Receivers by ID\n7. Export to File\n8. Return to Main Menu\nEnter your choice: ";
+        std::cout << "\t\t  BIET DOI HIGH CODE\t" << std::endl;
+        std::cout << "====================RECEIVER-MANAGEMENT===================\n";
+        std::cout << "==               1.Add Receiver                         ==\n";
+        std::cout << "==               2.Print Receiver List                  ==\n";
+        std::cout << "==               3.Delete Receiver By ID                ==\n";
+        std::cout << "==               4.Update Receiver By ID                ==\n";
+        std::cout << "==               5.Find Receiver By ID                  ==\n";
+        std::cout << "==               6.Sort Receiver List By ID             ==\n";
+        std::cout << "==               7.Export Receiver List To File         ==\n";
+        std::cout << "==               8.Return To Main Menu                  ==\n";
+        std::cout << "==========================================================\n";
+        std::cout <<" Enter your choice:"; 
         std::cin >> choice;
 
         switch (choice) {
@@ -829,10 +858,12 @@ void displayReceiverMenu(Management& manager) {
             }
             break;
         case 7: {
+            system("CLS");
             std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFile(manager.receivers, fname, "Receiver"); }
+            manager.exportToFile(manager.receivers, fname, "Receiver"); 
+            std::cout<<"\nExport File Successfully !\n";}
               system("pause");
               break;
         case 8:
@@ -849,9 +880,19 @@ void displayOrderMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Order Management Menu:\n";
-        std::cout << "1. Add a Order\n2. Print All Orders\n3. Delete a Order\n4. Update Order Details\n";
-        std::cout << "5. Find a Orders\n6. Sort Orders by ID\n7. Sort Orders by Date\n8. Export to File\n9. Return to Main Menu\nEnter your choice: ";
+        std::cout << "\t\t  BIET DOI HIGH CODE\t" << std::endl;
+        std::cout << "====================ORDER-MANAGEMENT===================\n";
+        std::cout << "==               1.Add Order                         ==\n";
+        std::cout << "==               2.Print Order List                  ==\n";
+        std::cout << "==               3.Delete Order By ID                ==\n";
+        std::cout << "==               4.Update Order By ID                ==\n";
+        std::cout << "==               5.Find Order By ID                  ==\n";
+        std::cout << "==               6.Sort Order List By ID             ==\n";
+        std::cout << "==               7.Sort Order List By Date           ==\n";
+        std::cout << "==               8.Export Order List To File         ==\n";
+        std::cout << "==               9.Return To Main Menu               ==\n";
+        std::cout << "=======================================================\n";
+        std::cout <<" Enter your choice:"; 
         std::cin >> choice;
 
         switch (choice) {
@@ -909,10 +950,12 @@ void displayOrderMenu(Management& manager) {
             }
             break;
         case 8: {
+            system("CLS");
             std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
             manager.exportToFileOrder(manager.orders, fname, manager.senders, manager.receivers);
+            std::cout<<"\nExport File Successfully !\n";
         }
               system("pause");
               break;
@@ -930,8 +973,14 @@ void displayShipperMenu(Management& manager) {
     int choice;
     do {
         system("CLS");
-        std::cout << "Shipper Management Menu:\n";
-        std::cout << "1. Print All Shippers\n2. Set status for a Shipper\n3. Export to file list Shipper\n4. Return to Main Menu\nEnter your choice: ";
+        std::cout << "\t\t  BIET DOI HIGH CODE\t" << std::endl;
+        std::cout << "====================SHIPPER-MANAGEMENT===================\n";
+        std::cout << "==               1.Print Shipper List                  ==\n";
+        std::cout << "==               2.Set Shipper Status                  ==\n";
+        std::cout << "==               3.Export Shipper List To File         ==\n";
+        std::cout << "==               4.Return To Main Menu                 ==\n";
+        std::cout << "=========================================================\n";
+        std::cout <<" Enter your choice:"; 
         std::cin >> choice;
 
         switch (choice) {
@@ -942,10 +991,13 @@ void displayShipperMenu(Management& manager) {
             manager.setShipperStatus(manager.shippers);
             break;
         case 3: {
+            system("CLS");
             std::string fname;
             std::cout << "Enter the filename: ";
             std::cin >> fname;
-            manager.exportToFileShipper(manager.shippers, fname); }
+            manager.exportToFileShipper(manager.shippers, fname);
+            std::cout<<"\nExport File Successfully !\n"; }
+            system("pause");
               break;
         case 4:
 
