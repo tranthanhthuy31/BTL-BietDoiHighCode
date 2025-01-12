@@ -1,330 +1,342 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <iomanip>
-#include <fstream>
-#include"Person.h"
-#include"Person.cpp"
-#include"Shipment.h"
-#include"Shipment.cpp"
-#include"Shipper.h"
-#include"Shipper.cpp"
-#include"Management.h"
-#include"Management.cpp"
+#include "Display.h"
 
-void displayMenuManagement(Management& manager) {
+void displayMenuManagement() {
     int choice;
     do {
         system("CLS");
-        std::cout << "\t\t   BIET DOI HIGH CODE\t" << std::endl;
-        std::cout << "====================MENU-MANAGEMENT===================\n";
-        std::cout << "==               1.Sender Management                ==\n";
-        std::cout << "==               2.Receiver Management              ==\n";
-        std::cout << "==               3.Shipment Management              ==\n";
-        std::cout << "==               4.Shipper Management               ==\n";
-        std::cout << "==               5.Exit                             ==\n";
-        std::cout << "======================================================\n";
-        std::cout <<" Enter your choice:"; 
-        std::cin >> choice;
+        printf("\t\t   BIET DOI HIGH CODE\t\n");
+        printf("====================MENU-MANAGEMENT====================\n");
+        printf("==               1. Sender Management                ==\n");
+        printf("==               2. Receiver Management              ==\n");
+        printf("==               3. Shipment Management              ==\n");
+        printf("==               4. Shipper Management               ==\n");
+        printf("==               5. Exit                             ==\n");
+        printf("=======================================================\n");
+        printf("Enter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
 
         switch (choice) {
         case 1:
-            displaySenderMenu(manager);
+            displaySenderMenu();
             break;
         case 2:
-            displayReceiverMenu(manager);
+            displayReceiverMenu();
             break;
         case 3:
-            displayShipmentMenu(manager);
+            displayShipmentMenu();
             break;
         case 4:
-            displayShipperMenu(manager);
+            displayShipperMenu();
             break;
         case 5:
-            std::cout << "Exiting...\n";
+            printf("Exiting...\n");
             break;
         default:
-            std::cout << "Invalid choice! Please try again.\n";
+            printf("Invalid choice! Please try again.\n");
             system("pause");
             break;
         }
     } while (choice != 5);
 }
 
-void displaySenderMenu(Management& manager) {
+void displaySenderMenu() {
     int choice;
     do {
         system("CLS");
-        std::cout << "\t\t   BIET DOI HIGH CODE\t" << std::endl;
-        std::cout << "====================SENDER-MANAGEMENT===================\n";
-        std::cout << "==               1.Add Sender                         ==\n";
-        std::cout << "==               2.Print Sender List                  ==\n";
-        std::cout << "==               3.Delete Sender By ID                ==\n";
-        std::cout << "==               4.Update Sender By ID                ==\n";
-        std::cout << "==               5.Find Sender By ID                  ==\n";
-        std::cout << "==               6.Sort Sender List By ID             ==\n";
-        std::cout << "==               7.Export Sender List To File         ==\n";
-        std::cout << "==               8.Return To Main Menu                ==\n";
-        std::cout << "========================================================\n";
-        std::cout <<" Enter your choice:"; 
-        std::cin >> choice;
+        printf("\t\t   BIET DOI HIGH CODE\t\n");
+        printf("====================SENDER-MANAGEMENT====================\n");
+        printf("==               1. Add Sender                         ==\n");
+        printf("==               2. Print Sender List                  ==\n");
+        printf("==               3. Delete Sender By ID                ==\n");
+        printf("==               4. Update Sender By ID                ==\n");
+        printf("==               5. Find Sender By ID                  ==\n");
+        printf("==               6. Sort Sender List By ID             ==\n");
+        printf("==               7. Export Sender List To File         ==\n");
+        printf("==               8. Return To Main Menu                ==\n");
+        printf("=========================================================\n");
+        printf("Enter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
 
         switch (choice) {
         case 1:
-            manager.addPerson(manager.senders, "Sender");
+            addPerson(senders, &sendersCount, "Sender");
             break;
         case 2:
-            manager.printAllPersons(manager.senders, "Sender");
+            printAllPersons(senders, sendersCount, "Sender");
             break;
         case 3:
-            manager.deletePerson(manager.senders, "Sender");
+            deletePerson(senders, &sendersCount, "Sender");
             break;
         case 4:
-            manager.updatePerson(manager.senders, "Sender");
+            updatePerson(senders, sendersCount, "Sender");
             break;
         case 5:
-            manager.findPerson(manager.senders, "Sender");
+            findPerson(senders, sendersCount, "Sender");
             break;
-        case 6:
+        case 6: {
             system("CLS");
             int personChoice;
-            std::cout << "1. Ascending\n2. Descending" << std::endl;
-            std::cout << "Enter your choice: "; std::cin >> personChoice;
+            printf("1. Ascending\n2. Descending\n");
+            printf("Enter your choice: ");
+            scanf_s("%d", &personChoice);
+            getchar();
+
             if (personChoice == 1) {
-                manager.sortPersonById(manager.senders, personChoice == 1);
-                std::cout << "Senders sorted by ID (Ascending)!" << std::endl;
-                system("pause");
+                sortPersonById(senders, sendersCount, 1);
+                printf("Senders sorted by ID (Ascending)!\n");
+            } else if (personChoice == 2) {
+                sortPersonById(senders, sendersCount, 0);
+                printf("Senders sorted by ID (Descending)!\n");
+            } else {
+                printf("Invalid choice!\n");
             }
-            else if (personChoice == 2) {
-                manager.sortPersonById(manager.senders, personChoice == 0);
-                std::cout << "Senders sorted by ID (Descending)!" << std::endl;
-                system("pause");
-            }
-            else {
-                std::cout << "Invalid Shipment choice!" << std::endl;
-            }
+            system("pause");
             break;
+        }
         case 7: {
             system("CLS");
-            std::string fname;
-            std::cout << "Enter the filename: ";
-            std::cin >> fname;
-            manager.exportToFile(manager.senders, fname, "Sender");
-            std::cout<<"\nExport File Successfully !\n"; }
-              system("pause");
-              break;
+            char fname[20];
+            printf("Enter the filename: ");
+            scanf_s("%s", fname);
+            getchar();
+
+            exportToFile(senders, sendersCount, fname, "Sender");
+            printf("Exported File Successfully!\n");
+            system("pause");
+            break;
+        }
         case 8:
             return;
         default:
-            std::cout << "Invalid choice! Please try again.\n";
+            printf("Invalid choice! Please try again.\n");
             system("pause");
             break;
         }
     } while (choice != 8);
 }
 
-void displayReceiverMenu(Management& manager) {
+void displayReceiverMenu() {
     int choice;
     do {
         system("CLS");
-        std::cout << "\t\t   BIET DOI HIGH CODE\t" << std::endl;
-        std::cout << "====================RECEIVER-MANAGEMENT===================\n";
-        std::cout << "==               1.Add Receiver                         ==\n";
-        std::cout << "==               2.Print Receiver List                  ==\n";
-        std::cout << "==               3.Delete Receiver By ID                ==\n";
-        std::cout << "==               4.Update Receiver By ID                ==\n";
-        std::cout << "==               5.Find Receiver By ID                  ==\n";
-        std::cout << "==               6.Sort Receiver List By ID             ==\n";
-        std::cout << "==               7.Export Receiver List To File         ==\n";
-        std::cout << "==               8.Return To Main Menu                  ==\n";
-        std::cout << "==========================================================\n";
-        std::cout <<" Enter your choice:"; 
-        std::cin >> choice;
+        printf("\t\t   BIET DOI HIGH CODE\t\n");
+        printf("====================RECEIVER-MANAGEMENT====================\n");
+        printf("==               1. Add Receiver                         ==\n");
+        printf("==               2. Print Receiver List                  ==\n");
+        printf("==               3. Delete Receiver By ID                ==\n");
+        printf("==               4. Update Receiver By ID                ==\n");
+        printf("==               5. Find Receiver By ID                  ==\n");
+        printf("==               6. Sort Receiver List By ID             ==\n");
+        printf("==               7. Export Receiver List To File         ==\n");
+        printf("==               8. Return To Main Menu                  ==\n");
+        printf("===========================================================\n");
+        printf("Enter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
 
         switch (choice) {
         case 1:
-            manager.addPerson(manager.receivers, "Receiver");
+            addPerson(receivers, &receiversCount, "Receiver");
             break;
         case 2:
-            manager.printAllPersons(manager.receivers, "Receiver");
+            printAllPersons(receivers, receiversCount, "Receiver");
             break;
         case 3:
-            manager.deletePerson(manager.receivers, "Receiver");
+            deletePerson(receivers, &receiversCount, "Receiver");
             break;
         case 4:
-            manager.updatePerson(manager.receivers, "Receiver");
+            updatePerson(receivers, receiversCount, "Receiver");
             break;
         case 5:
-            manager.findPerson(manager.receivers, "Receiver");
+            findPerson(receivers, receiversCount, "Receiver");
             break;
-        case 6:
+        case 6: {
             system("CLS");
             int personChoice;
-            std::cout << "1. Ascending\n2. Descending" << std::endl;
-            std::cout << "Enter your choice: "; std::cin >> personChoice;
+            printf("1. Ascending\n2. Descending\n");
+            printf("Enter your choice: ");
+            scanf_s("%d", &personChoice);
+            getchar();
+
             if (personChoice == 1) {
-                manager.sortPersonById(manager.receivers, personChoice == 1);
-                std::cout << "Receivers sorted by ID (Ascending)!" << std::endl;
-                system("pause");
+                sortPersonById(receivers, receiversCount, 1);
+                printf("Receivers sorted by ID (Ascending)!\n");
+            } else if (personChoice == 2) {
+                sortPersonById(receivers, receiversCount, 0);
+                printf("Receivers sorted by ID (Descending)!\n");
+            } else {
+                printf("Invalid choice!\n");
             }
-            else if (personChoice == 2) {
-                manager.sortPersonById(manager.receivers, personChoice == 0);
-                std::cout << "Receivers sorted by ID (Descending)!" << std::endl;
-                system("pause");
-            }
-            else {
-                std::cout << "Invalid Shipment choice!" << std::endl;
-            }
+            system("pause");
             break;
+        }
         case 7: {
             system("CLS");
-            std::string fname;
-            std::cout << "Enter the filename: ";
-            std::cin >> fname;
-            manager.exportToFile(manager.receivers, fname, "Receiver"); 
-            std::cout<<"\nExport File Successfully !\n";}
-              system("pause");
-              break;
+            char fname[20];
+            printf("Enter the filename: ");
+            scanf_s("%s", fname);
+            getchar();
+
+            exportToFile(receivers, receiversCount, fname, "Receiver");
+            printf("Exported File Successfully!\n");
+            system("pause");
+            break;
+        }
         case 8:
             return;
         default:
-            std::cout << "Invalid choice! Please try again.\n";
+            printf("Invalid choice! Please try again.\n");
             system("pause");
             break;
         }
     } while (choice != 8);
 }
 
-void displayShipmentMenu(Management& manager) {
+void displayShipmentMenu() {
     int choice;
     do {
         system("CLS");
-        std::cout << "\t\t   BIET DOI HIGH CODE\t" << std::endl;
-        std::cout << "====================SHIPMENT-MANAGEMENT===================\n";
-        std::cout << "==               1.Add Shipment                         ==\n";
-        std::cout << "==               2.Print Shipment List                  ==\n";
-        std::cout << "==               3.Delete Shipment By ID                ==\n";
-        std::cout << "==               4.Update Shipment By ID                ==\n";
-        std::cout << "==               5.Find Shipment By ID                  ==\n";
-        std::cout << "==               6.Sort Shipment List By ID             ==\n";
-        std::cout << "==               7.Sort Shipment List By Date           ==\n";
-        std::cout << "==               8.Export Shipment List To File         ==\n";
-        std::cout << "==               9.Return To Main Menu                  ==\n";
-        std::cout << "==========================================================\n";
-        std::cout <<" Enter your choice:"; 
-        std::cin >> choice;
+        printf("\t\t   BIET DOI HIGH CODE\t\n");
+        printf("====================SHIPMENT-MANAGEMENT====================\n");
+        printf("==               1. Add Shipment                         ==\n");
+        printf("==               2. Print Shipment List                  ==\n");
+        printf("==               3. Delete Shipment By ID                ==\n");
+        printf("==               4. Update Shipment By ID                ==\n");
+        printf("==               5. Find Shipment By ID                  ==\n");
+        printf("==               6. Sort Shipments                       ==\n");
+        printf("==               7. Export Shipment List To File         ==\n");
+        printf("==               8. Return To Main Menu                  ==\n");
+        printf("===========================================================\n");
+        printf("Enter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
 
         switch (choice) {
         case 1:
-            manager.addShipment(manager.Shipments, manager.senders, manager.receivers);
+            addShipment();
             break;
         case 2:
-            manager.printAllShipments(manager.Shipments);
+            printAllShipments();
             break;
         case 3:
-            manager.deleteShipment(manager.Shipments, manager.senders, manager.receivers);
+            deleteShipment();
             break;
         case 4:
-            manager.updateShipment(manager.Shipments);
+            updateShipment();
             break;
         case 5:
-            manager.findShipment(manager.Shipments);
+            findShipment();
             break;
-        case 6:
+        case 6: {
             system("CLS");
-            int ShipmentChoice;
-            std::cout << "1. Ascending\n2. Descending" << std::endl;
-            std::cout << "Enter your choice: "; std::cin >> ShipmentChoice;
-            if (ShipmentChoice == 1) {
-                manager.sortShipmentsById(manager.Shipments, true);
-                std::cout << "Shipments sorted by ID (Ascending)!" << std::endl;
-                system("pause");
-            }
-            else if (ShipmentChoice == 2) {
-                manager.sortShipmentsById(manager.Shipments, false);
-                std::cout << "Shipments sorted by ID (Descending)!" << std::endl;
-                system("pause");
-            }
-            else {
-                std::cout << "Invalid Shipment choice!" << std::endl;
-            }
-            break;
-        case 7:
-            system("CLS");
-            int dateChoice;
-            std::cout << "1. Ascending\n2. Descending" << std::endl;
-            std::cout << "Enter your choice: "; std::cin >> dateChoice;
-            if (dateChoice == 1) {
-                manager.sortShipmentsByDate(manager.Shipments, true);
-                std::cout << "Shipments sorted by Date (Ascending)!" << std::endl;
-                system("pause");
-            }
-            else if (dateChoice == 2) {
-                manager.sortShipmentsByDate(manager.Shipments, false);
-                std::cout << "Shipments sorted by Date (Descending)!" << std::endl;
-                system("pause");
-            }
-            else {
-                std::cout << "Invalid date choice!" << std::endl;
-            }
-            break;
-        case 8: {
-            system("CLS");
-            std::string fname;
-            std::cout << "Enter the filename: ";
-            std::cin >> fname;
-            manager.exportToFileShipment(manager.Shipments, fname, manager.senders, manager.receivers);
-            std::cout<<"\nExport File Successfully !\n";
-        }
+            int sortChoice, orderChoice;
+            printf("1. Sort by ID\n2. Sort by Date\n");
+            printf("Enter your choice: ");
+            scanf_s("%d", &sortChoice);
+            getchar();
 
-              system("pause");
-              break;
-        case 9:
-            return;
-        default:
-            std::cout << "Invalid choice! Please try again.\n";
+            if (sortChoice == 1 || sortChoice == 2) {
+                printf("1. Ascending\n2. Descending\n");
+                printf("Enter your choice: ");
+                scanf_s("%d", &orderChoice);
+                getchar();
+
+                if (sortChoice == 1) {
+                    if (orderChoice == 1) {
+                        sortShipmentsById(1);
+                        printf("Shipments sorted by ID (Ascending)!\n");
+                    }
+                    else if (orderChoice == 2) {
+                        sortShipmentsById(0);
+                        printf("Shipments sorted by ID (Descending)!\n");
+                    }
+                    else {
+                        printf("Invalid order choice!\n");
+                    }
+                }
+                else if (sortChoice == 2) {
+                    if (orderChoice == 1) {
+                        sortShipmentsByDate(1);
+                        printf("Shipments sorted by Date (Ascending)!\n");
+                    }
+                    else if (orderChoice == 2) {
+                        sortShipmentsByDate(0);
+                        printf("Shipments sorted by Date (Descending)!\n");
+                    }
+                    else {
+                        printf("Invalid order choice!\n");
+                    }
+                }
+            }
+            else {
+                printf("Invalid sort choice!\n");
+            }
             system("pause");
             break;
         }
-    } while (choice != 9);
+        case 7: {
+            system("CLS");
+            char fname[20];
+            printf("Enter the filename: ");
+            scanf_s("%s", fname);
+            getchar();
+
+            exportToFileShipment(fname);
+            printf("Exported File Successfully!\n");
+            system("pause");
+            break;
+        }
+        case 8:
+            return;
+        default:
+            printf("Invalid choice! Please try again.\n");
+            system("pause");
+            break;
+        }
+    } while (choice != 8);
 }
 
-void displayShipperMenu(Management& manager) {
+void displayShipperMenu() {
     int choice;
     do {
         system("CLS");
-        std::cout << "\t\t   BIET DOI HIGH CODE\t" << std::endl;
-        std::cout << "====================SHIPPER-MANAGEMENT===================\n";
-        std::cout << "==               1.Print Shipper List                  ==\n";
-        std::cout << "==               2.Set Shipper Status                  ==\n";
-        std::cout << "==               3.Export Shipper List To File         ==\n";
-        std::cout << "==               4.Return To Main Menu                 ==\n";
-        std::cout << "=========================================================\n";
-        std::cout <<" Enter your choice:"; 
-        std::cin >> choice;
+        printf("\t\t   BIET DOI HIGH CODE\t\n");
+        printf("====================SHIPPER-MANAGEMENT====================\n");
+        printf("==               1. Print Shipper List                  ==\n");
+        printf("==               2. Set Shipper Status                  ==\n");
+        printf("==               3. Export Shipper List To File         ==\n");
+        printf("==               4. Return To Main Menu                 ==\n");
+        printf("==========================================================\n");
+        printf("Enter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
 
         switch (choice) {
         case 1:
-            manager.printAllShippers(manager.shippers);
+            printAllShippers(shippers, shippersCount);
+
             break;
         case 2:
-            manager.setShipperStatus(manager.shippers);
+            setShipperStatus();
             break;
         case 3: {
             system("CLS");
-            std::string fname;
-            std::cout << "Enter the filename: ";
-            std::cin >> fname;
-            manager.exportToFileShipper(manager.shippers, fname);
-            std::cout<<"\nExport File Successfully !\n"; }
-            system("pause");
-              break;
-        case 4:
+            char fname[20];
+            printf("Enter the filename: ");
+            scanf_s("%s", fname);
+            getchar();
 
+            exportToFileShipper(fname);
+            printf("Exported File Successfully!\n");
+            system("pause");
+            break;
+        }
+        case 4:
             return;
         default:
-            std::cout << "Invalid choice! Please try again.\n";
+            printf("Invalid choice! Please try again.\n");
             system("pause");
             break;
         }

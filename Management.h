@@ -1,80 +1,65 @@
-#pragma once
+
 #ifndef MANAGEMENT_H
 #define MANAGEMENT_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>
+#include "Shipment.h"
+#include "Shipper.h"
+#include "Person.h"
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <iomanip>
-#include <fstream>
-#include"Person.h"
-#include"Shipment.h"
-#include"Shipper.h"
+extern Person senders[100];
+extern int sendersCount;
 
-class Management {
+extern Person receivers[100];
+extern int receiversCount;
 
-private:
+extern Shipment shipments[100];
+extern int ShipmentsCount;
 
-    std::vector<Person> senders;
-    std::vector<Person> receivers;
-    std::vector<Shipment> Shipments;
-    std::vector<Shipper> shippers;
+extern Shipper shippers[100];
+extern int shippersCount;
 
-public:
-    void addPerson(std::vector<Person>& list, const std::string& role) ;
+void addPerson(Person* list, int* listSize, const char* role);
 
-    void printAllPersons(const std::vector<Person>& list, const std::string& role) const;
+void printAllPersons(const Person* list, int listSize, const char* role);
 
-    void deletePerson(std::vector<Person>& list, const std::string& role) ;
+void deletePerson(Person* list, int* listSize, const char* role);
 
-    void updatePerson(std::vector<Person>& list, const std::string& role);
+void updatePerson(Person* list, int listSize, const char* role);
 
-    void findPerson(const std::vector<Person>& list, const std::string& role) const ;
+void findPerson(const Person* list, int listSize, const char* role);
 
-    void sortPersonById(std::vector<Person>& list, bool ascending = true) ;
+void sortPersonById(Person* list, int listSize, int ascending);
 
-    void exportToFile(const std::vector<Person>& list, const std::string& filename, const std::string& role) ;
+void exportToFile(const Person* list, int listSize, const char* filename, const char* role);
 
-    //---------//
+void addShipment();
 
-    void addShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) ;
+void printAllShipments();
 
-    void printAllShipments(const std::vector<Shipment> list) const ;
+void deleteShipment();
 
-    void deleteShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) ;
+void updateShipment();
 
-    void updateShipment(std::vector<Shipment>& list) ;
+void findShipment();
 
-    void findShipment(std::vector<Shipment>& list) const ;
+void sortShipmentsById(int ascending);
 
-    void exportToFileShipment(const std::vector<Shipment>& list, std::string filename, std::vector<Person>& senders, std::vector<Person>& receivers);
+void sortShipmentsByDate(int ascending);
 
-    void sortShipmentsById(std::vector<Shipment>& list, bool ascending = true) ;
+void exportToFileShipment(const char* filename);
 
-    void sortShipmentsByDate(std::vector<Shipment>& Shipments, bool ascending = true) ;
+void printAllShippers(Shipper* shippers, int shippersCount);
 
-    //---------//
+void setShipperStatus();
 
-    void printAllShippers(const std::vector<Shipper>& list) const ;
+void exportToFileShipper(const char* filename);
 
-    void setShipperStatus(std::vector<Shipper>& shippers);
+void addSenders();
 
-    void exportToFileShipper(const std::vector<Shipper>& shippers, std::string filename) ;
+void addReceivers();
 
-    //---thêm dữ liệu lấy ví dụ---//
-
-    void addSenders() ;
-
-    void addReceivers() ;
-
-    void addShipper() ;
-
-    friend void displayMenuManagement(Management& manager);
-    friend void displaySenderMenu(Management& manager);
-    friend void displayReceiverMenu(Management& manager);
-    friend void displayShipmentMenu(Management& manager);
-    friend void displayShipperMenu(Management& manager);
-};
-
-#endif
+void addShippers();
+#endif // MANAGEMENT_H

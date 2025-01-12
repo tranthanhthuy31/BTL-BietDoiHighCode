@@ -1,540 +1,754 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <iomanip>
-#include <fstream>
-#include"Management.h"
+#include "Management.h"
 
-    void Management::addPerson(std::vector<Person>& list, const std::string& role) {
-        system("CLS");
-        std::string name, address, id, tel;
+Person senders[100];
+int sendersCount = 0;
 
-        std::cout << "Enter " << role << " ID: ";
-        std::cin >> id;
-        std::cin.ignore();
+Person receivers[100];
+int receiversCount = 0;
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Person& p) {
-            return p.id == id;
-            });
+Shipment Shipments[100];
+int ShipmentsCount = 0;
 
-        if (it != list.end()) {
-            std::cout << role << " with ID " << id << " already exists. Please enter a new ID.\n";
-            system("pause");
-            return;
+Shipper shippers[100];
+int shippersCount = 0;
+
+void addPerson(Person* list, int* listSize, const char* role)
+{
+    system("CLS");
+    char name[100], address[100], id[100], tel[100];
+
+    printf("Enter %s ID: ", role);
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
+
+    Person* personToAdd = NULL;
+    for (int i = 0; i < *listSize; ++i) {
+        if (strcmp(list[i].id, id) == 0) {
+            personToAdd = &list[i];
+            break;
         }
+    }
 
-        std::cout << "Enter " << role << " Name: ";
-        std::getline(std::cin, name);
+    if (personToAdd) {
+        printf("%s with ID %s already exists. Please enter a new ID.\n", role, id);
+        system("pause");
+        return;
+    }
 
-        std::cout << "Enter " << role << " Address: ";
-        std::getline(std::cin, address);
+    printf("Enter %s Name: ", role);
+    fgets(name, 100, stdin);
+    name[strcspn(name, "\n")] = '\0';
 
-        std::cout << "Enter " << role << " Tel: ";
-        std::cin >> tel;
-        std::cin.ignore();
+    printf("Enter %s Address: ", role);
+    fgets(address, 100, stdin);
+    address[strcspn(address, "\n")] = '\0';
 
-        list.emplace_back(name, address, id, tel);
-        std::cout << role << " added successfully!\n";
+    printf("Enter %s Tel: ", role);
+    scanf_s("%99s", tel, (unsigned)_countof(tel));
+    getchar();
+
+    strcpy_s(list[*listSize].name, name);
+    strcpy_s(list[*listSize].address, address);
+    strcpy_s(list[*listSize].id, id);
+    strcpy_s(list[*listSize].tel, tel);
+
+    (*listSize)++;
+
+    printf("%s added successfully!\n", role);
+    system("pause");
+}
+
+void printAllPersons(const Person* list, int listSize, const char* role)
+{
+    system("CLS");
+    printf("%-10s %-20s %-20s %-16s %-10s\n", "ID", "Name", "Address", "Tel", "Shipments");
+    printf("%s\n", "---------------------------------------------------------------------------------");
+
+    for (int i = 0; i < listSize; ++i) {
+        printf("%-10s %-20s %-20s %-16s %-10d\n",
+        list[i].id,
+        list[i].name,
+        list[i].address,
+        list[i].tel,
+        list[i].shipments);
+    }
+
+    system("pause");
+}
+
+void deletePerson(Person* list, int* listSize, const char* role)
+{
+    system("CLS");
+    int i;
+    char id[100];
+
+    printf("Enter %s ID to delete: ", role);
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
+
+    Person* personToDelete = NULL;
+    for (i = 0; i < *listSize; ++i) {
+        if (strcmp(list[i].id, id) == 0) {
+            personToDelete = &list[i];
+            break;
+        }
+    }
+
+    if (personToDelete) {
+        for (; i < *listSize - 1; ++i) {
+            list[i] = list[i + 1];
+        }
+        (*listSize)--;
+        printf("%s with ID %s deleted successfully!\n", role, id);
+        system("pause");
+    } else {
+        printf("%s with ID %s does not exist.\n", role, id);
         system("pause");
     }
+}
 
-    void Management::printAllPersons(const std::vector<Person>& list, const std::string& role) const {
-        system("CLS");
-        std::cout << std::left
-            << std::setw(10) << "ID"
-            << std::setw(20) << "Name"
-            << std::setw(20) << "Address"
-            << std::setw(16) << "Tel"
-            << std::setw(10) << "Shipments" << std::endl;
+void updatePerson(Person* list, int listSize, const char* role)
+{
+    system("CLS");
+    char id[50];
+    printf("Enter %s ID to update: ", role);
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
 
-        std::cout << std::string(81, '-');
-        std::cout << "\n";
-        for (const auto& person : list) {
-            person.displayPerson();
+    Person* personToUpdate = NULL;
+    for (int i = 0; i < listSize; ++i) {
+        if (strcmp(list[i].id, id) == 0) {
+            personToUpdate = &list[i];
+            break;
         }
+    }
+
+    if (personToUpdate) {
+        int choice;
+        printf("%s found! What do you want to update?\n", role);
+        printf("1. Name\n2. Address\n3. Telephone\nEnter your choice: ");
+        scanf_s("%d", &choice);
+        getchar();
+
+        switch (choice) {
+        case 1: {
+            char newName[100];
+            printf("Enter new name: ");
+            fgets(newName, sizeof(newName), stdin);
+            newName[strcspn(newName, "\n")] = '\0';
+            strcpy_s(personToUpdate->name, newName);
+            printf("Name updated successfully!\n");
+            system("pause");
+            break;
+        }
+        case 2: {
+            char newAddress[200];
+            printf("Enter new address: ");
+            fgets(newAddress, sizeof(newAddress), stdin);
+            newAddress[strcspn(newAddress, "\n")] = '\0';
+            strcpy_s(personToUpdate->address, newAddress);
+            printf("Address updated successfully!\n");
+            system("pause");
+            break;
+        }
+        case 3: {
+            char newTel[15];
+            printf("Enter new telephone: ");
+            scanf_s("%99s", newTel, (unsigned)_countof(newTel));
+            getchar();
+            strcpy_s(personToUpdate->tel, newTel);
+            printf("Telephone updated successfully!\n");
+            system("pause");
+            break;
+        }
+        default:
+            printf("Invalid choice!\n");
+            system("pause");
+            break;
+        }
+    } else {
+        printf("%s with ID %s does not exist.\n", role, id);
         system("pause");
     }
+}
 
-    void Management::deletePerson(std::vector<Person>& list, const std::string& role) {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter " << role << " ID to delete: ";
-        std::cin >> id;
+void findPerson(const Person* list, int listSize, const char* role)
+{
+    system("CLS");
+    char id[100];
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Person& p) {
-            return p.id == id;
-            });
+    printf("Enter %s ID to find: ", role);
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
 
-        if (it != list.end()) {
-            list.erase(it);
-            std::cout << role << " with ID " << id << " deleted successfully!\n";
-            system("pause");
-        }
-        else {
-            std::cout << role << " with ID " << id << " does not exist.\n";
-            system("pause");
+    int found = 0;
+    for (int i = 0; i < listSize; ++i) {
+        if (strcmp(list[i].id, id) == 0) {
+            printf("%-10s %-20s %-20s %-16s %-16s\n",
+                "ID",
+                "Name",
+                "Address",
+                "Telephone",
+                "Shipments");
+            printf("%-10s %-20s %-20s %-16s %-10d\n",
+            list[i].id,
+            list[i].name,
+            list[i].address,
+            list[i].tel,
+            list[i].shipments);
+            found = 1;
+            break;
         }
     }
 
-    void Management::updatePerson(std::vector<Person>& list, const std::string& role) {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter " << role << " ID to update: ";
-        std::cin >> id;
+    if (!found) {
+        printf("%s with ID %s does not exist. Returning to main menu.\n", role, id);
+    }
+    system("pause");
+}
 
-        auto it = std::find_if(list.begin(), list.end(), [id](const Person& p) {
-            return p.id == id;
-            });
+int compareAscending(const void* a, const void* b)
+{
+    Person* personA = (Person*)a;
+    Person* personB = (Person*)b;
+    return strcmp(personA->id, personB->id);
+}
 
-        if (it != list.end()) {
-            Person& personToUpdate = *it;
-            int choice;
-            std::cout << role << " found! What do you want to update?\n";
-            std::cout << "1. Name\n2. Address\n3. Telephone\nEnter your choice: ";
-            std::cin >> choice;
-            std::cin.ignore();
+int compareDescending(const void* a, const void* b)
+{
+    Person* personA = (Person*)a;
+    Person* personB = (Person*)b;
+    return strcmp(personB->id, personA->id);
+}
+
+void sortPersonById(Person* list, int listSize, int ascending)
+{
+    if (ascending) {
+        qsort(list, listSize, sizeof(Person), compareAscending);
+    } else {
+        qsort(list, listSize, sizeof(Person), compareDescending);
+    }
+}
+
+void exportToFile(const Person* list, int listSize, const char* filename, const char* role)
+{
+    FILE* outFile;
+    errno_t err = fopen_s(&outFile, filename, "w");
+    if (err != 0 || !outFile) {
+        fprintf(stderr, "Could not open the file!\n");
+        return;
+    }
+
+    fprintf(outFile, "%s:\n", role);
+    fprintf(outFile, "==============================\n");
+    for (int i = 0; i < listSize; ++i) {
+        fprintf(outFile, "Name: %s\n", list[i].name);
+        fprintf(outFile, "Address: %s\n", list[i].address);
+        fprintf(outFile, "Telephone: %s\n", list[i].tel);
+        fprintf(outFile, "ID: %s\n", list[i].id);
+        fprintf(outFile, "-----------------------------\n");
+    }
+    fclose(outFile);
+}
+
+int findShipmentById(const char* id)
+{
+    for (int i = 0; i < ShipmentsCount; ++i) {
+        if (strcmp(Shipments[i].ShipmentId, id) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void addShipment()
+{
+    system("CLS");
+    int status, pstatus;
+    char goods[100], shipmentId[100], senderId[100], receiverId[100];
+    Date sDate, rDate;
+
+    printf("Enter the information for new Shipment\n");
+
+    printf("Enter the Sender ID: ");
+    scanf_s("%99s", senderId, (unsigned)_countof(senderId));
+
+
+    Person* sender = NULL;
+    for (int i = 0; i < sendersCount; ++i) {
+        if (strcmp(senders[i].id, senderId) == 0) {
+            sender = &senders[i];
+            break;
+        }
+    }
+
+    if (sender == NULL) {
+        printf("Person with ID %s not found.\n", senderId);
+        system("pause");
+        return;
+    }
+
+    printf("Enter the Receiver ID: ");
+    scanf_s("%99s", receiverId, (unsigned)_countof(receiverId));
+
+    Person* receiver = NULL;
+    for (int i = 0; i < receiversCount; ++i) {
+        if (strcmp(receivers[i].id, receiverId) == 0) {
+            receiver = &receivers[i];
+            break;
+        }
+    }
+
+    if (receiver == NULL) {
+        printf("Person with ID %s not found.\n", receiverId);
+        system("pause");
+        return;
+    }
+
+    printf("Enter the Shipment ID: ");
+    fflush(stdin);
+    scanf_s("%99s", shipmentId, (unsigned)_countof(shipmentId));
+
+
+    if (findShipmentById(shipmentId)) {
+        printf("Shipment with ID %s already exists.\n", shipmentId);
+        system("pause");
+        return;
+    }
+
+    printf("Send Date (day month year): ");
+    fflush(stdin);
+    scanf_s("%d %d %d", &sDate.day, &sDate.month, &sDate.year);
+    printf("Receive Date (day month year): ");
+    fflush(stdin);
+    scanf_s("%d %d %d", &rDate.day, &rDate.month, &rDate.year);
+    getchar();
+    printf("Goods information: ");
+    fgets(goods, 100, stdin);
+    goods[strcspn(goods, "\n")] = 0;
+    printf("Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): ");
+    scanf_s("%d", &status);
+    printf("Payment Status: Unpaid (0) / Paid (1): ");
+    scanf_s("%d", &pstatus);
+
+    Shipment newShipment;
+    strcpy_s(newShipment.ShipmentId, shipmentId);
+    newShipment.sendDate = sDate;
+    newShipment.receiveDate = rDate;
+    newShipment.sender = *sender;
+    newShipment.receiver = *receiver;
+    strcpy_s(newShipment.goodsInfo, goods);
+    newShipment.status = (ShipmentStatus)status;
+    newShipment.paymentStatus = (PaymentStatus)pstatus;
+
+    Shipments[ShipmentsCount] = newShipment;
+    ShipmentsCount++;
+    sender->shipments++;
+    receiver->shipments++;
+    printf("Shipment added successfully!\n");
+    system("pause");
+}
+
+void displayPersonForShipment(const Person* person)
+{
+    printf("Name: %s\n", person->name);
+    printf("Address: %s\n", person->address);
+    printf("Telephone: %s\n", person->tel);
+}
+
+char* dateToString(const Date date) {
+    char* buffer = (char*)malloc(11 * sizeof(char));
+    if (buffer == nullptr) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return nullptr;
+    }
+    sprintf_s(buffer, 11, "%02d/%02d/%04d", date.day, date.month, date.year);
+    return buffer;
+}
+
+void displayShipment(const Shipment* shipment)
+{
+    printf("%-15s%-15s%-15s%-15s%-15s%-15s\n", "ID", "Send Date", "Receive Date", "Goods Info", "Status", "Payment Status");
+    printf("%-15s%-15s%-15s%-15s%-15s%-15s\n",
+           shipment->ShipmentId,
+           dateToString(shipment->sendDate),
+           dateToString(shipment->receiveDate),
+           shipment->goodsInfo,
+           shipment->status == Pending ? "Pending" :
+           shipment->status == InTransit ? "In Transit" :
+           shipment->status == Delivered ? "Delivered" : "Returned",
+           shipment->paymentStatus == Unpaid ? "Unpaid" : "Paid");
+
+    printf("-----Sender information:\n");
+    displayPersonForShipment(&shipment->sender);
+
+    printf("-----Receiver information:\n");
+    displayPersonForShipment(&shipment->receiver);
+
+    for (int i = 0; i < 100; i++) {
+        putchar('-');
+    }
+    printf("\n");
+}
+
+void printAllShipments()
+{
+    system("CLS");
+    printf("All Shipments:\n");
+    for (int i = 0; i < ShipmentsCount; ++i) {
+        displayShipment(&Shipments[i]);
+    }
+    system("pause");
+}
+
+void deleteShipment()
+{
+    system("CLS");
+    int i;
+    char id[100];
+    printf("Enter Shipment ID to delete: ");
+    scanf_s("%99s", id, (unsigned)_countof(id));
+
+    Shipment* shipmentToDelete = NULL;
+    for (i = 0; i < ShipmentsCount; ++i) {
+        if (strcmp(Shipments[i].ShipmentId, id) == 0) {
+            shipmentToDelete = &Shipments[i];
+            break;
+        }
+    }
+
+    if (shipmentToDelete) {
+        // Decrement the shipments count for the sender and receiver
+        for (int j = 0; j < sendersCount; ++j) {
+            if (strcmp(senders[j].id, shipmentToDelete->sender.id) == 0) {
+                senders[j].shipments--;
+                break;
+            }
+        }
+
+        for (int j = 0; j < receiversCount; ++j) {
+            if (strcmp(receivers[j].id, shipmentToDelete->receiver.id) == 0) {
+                receivers[j].shipments--;
+                break;
+            }
+        }
+
+        // Shift the remaining shipments in the array
+        for (; i < ShipmentsCount - 1; ++i) {
+            Shipments[i] = Shipments[i + 1];
+        }
+        ShipmentsCount--;
+
+        printf("Shipment with ID %s deleted successfully!\n", id);
+        system("pause");
+    } else {
+        printf("Shipment with ID %s does not exist.\n", id);
+        system("pause");
+    }
+}
+
+void updateShipment()
+{
+    system("CLS");
+    char id[50];
+    printf("Enter Shipment ID to update: ");
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
+
+    Shipment* shipmentToUpdate = NULL;
+    for (int i = 0; i < ShipmentsCount; ++i) {
+        if (strcmp(Shipments[i].ShipmentId, id) == 0) {
+            shipmentToUpdate = &Shipments[i];
+            break;
+        }
+    }
+
+    if (shipmentToUpdate) {
+        int choice;
+        int updateAgain = 1;
+
+        while (updateAgain) {
+            system("CLS");
+            printf("\nSelect field to update for Shipment ID %s:\n", id);
+            printf("1. Send Date\n");
+            printf("2. Receive Date\n");
+            printf("3. Status\n");
+            printf("4. Payment Status\n");
+            printf("5. Goods Info\n");
+            printf("6. Exit update\n");
+            printf("Enter your choice: ");
+            scanf_s("%d", &choice);
+            getchar();
 
             switch (choice) {
             case 1: {
-                std::string newName;
-                std::cout << "Enter new name: ";
-                std::getline(std::cin, newName);
-                personToUpdate.updateDetails(newName, personToUpdate.address, personToUpdate.tel);
-                std::cout << "Name updated successfully!\n";
+                Date newSendDate;
+                printf("Enter new Send Date (day month year): ");
+                scanf_s("%d %d %d", &newSendDate.day, &newSendDate.month, &newSendDate.year);
+                shipmentToUpdate->sendDate = newSendDate;
+                printf("Shipment with ID %s's Send Date updated successfully!\n", id);
                 system("pause");
                 break;
             }
             case 2: {
-                std::string newAddress;
-                std::cout << "Enter new address: ";
-                std::getline(std::cin, newAddress);
-                personToUpdate.updateDetails(personToUpdate.name, newAddress, personToUpdate.tel);
-                std::cout << "Address updated successfully!\n";
+                Date newReceiveDate;
+                printf("Enter new Receive Date (day month year): ");
+                scanf_s("%d %d %d", &newReceiveDate.day, &newReceiveDate.month, &newReceiveDate.year);
+                shipmentToUpdate->receiveDate = newReceiveDate;
+                printf("Shipment with ID %s's Receive Date updated successfully!\n", id);
                 system("pause");
                 break;
             }
             case 3: {
-                std::string newTel;
-                std::cout << "Enter new telephone: ";
-                std::cin >> newTel;
-                personToUpdate.updateDetails(personToUpdate.name, personToUpdate.address, newTel);
-                std::cout << "Telephone updated successfully!\n";
+                printf("Enter new Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): ");
+                int statusChoice;
+                scanf_s("%d", &statusChoice);
+                shipmentToUpdate->status = (ShipmentStatus)statusChoice;
+                printf("Shipment with ID %s's Status updated successfully!\n", id);
                 system("pause");
                 break;
             }
+            case 4: {
+                printf("Enter new Payment Status: Unpaid (0) / Paid (1): ");
+                int pstatusChoice;
+                scanf_s("%d", &pstatusChoice);
+                shipmentToUpdate->paymentStatus = (PaymentStatus)pstatusChoice;
+                printf("Shipment with ID %s's Payment Status updated successfully!\n", id);
+                system("pause");
+                break;
+            }
+            case 5: {
+                char newGoodsInfo[100];
+                printf("Enter new Goods Info: ");
+                getchar();
+                fgets(newGoodsInfo, sizeof(newGoodsInfo), stdin);
+                newGoodsInfo[strcspn(newGoodsInfo, "\n")] = '\0';
+                strncpy_s(shipmentToUpdate->goodsInfo, newGoodsInfo, 100);
+                printf("Shipment with ID %s's Goods Info updated successfully!\n", id);
+                system("pause");
+                break;
+            }
+            case 6:
+                updateAgain = 0;
+                break;
             default:
-                std::cout << "Invalid choice!\n";
-                system("pause");
-                break;
+                printf("Invalid choice. Please try again.\n");
             }
         }
-        else {
-            std::cout << role << " with ID " << id << " does not exist.\n";
-            system("pause");
+        printf("Shipment with ID %s updated successfully!\n", id);
+    } else {
+        printf("Shipment with ID %s not found!\n", id);
+        system("pause");
+    }
+}
+
+void findShipment()
+{
+    system("CLS");
+    char id[100];
+
+    printf("Enter Shipment ID to find: ");
+    scanf_s("%99s", id, (unsigned)_countof(id));
+    getchar();
+
+    int found = 0;
+    for (int i = 0; i < ShipmentsCount; ++i) {
+        if (strcmp(Shipments[i].ShipmentId, id) == 0) {
+            displayShipment(&Shipments[i]);
+            found = 1;
+            break;
         }
     }
 
-    void Management::findPerson(const std::vector<Person>& list, const std::string& role) const {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter " << role << " ID to find: ";
-        std::cin >> id;
-        std::cin.ignore();
-
-        auto it = std::find_if(list.begin(), list.end(), [id](const Person& p) {
-            return p.id == id;
-            });
-
-        if (it != list.end()) {
-            it->displayPerson();
-            system("pause");
-        }
-        else {
-            std::cout << role << " with ID " << id << " does not exist. Returning to main menu.\n";
-            system("pause");
-        }
+    if (!found) {
+        printf("Shipment with ID %s does not exist. Returning to main menu.\n", id);
     }
+    system("pause");
+}
 
-    void Management::sortPersonById(std::vector<Person>& list, bool ascending ) {
-        std::sort(list.begin(), list.end(),
-            [ascending](const Person& a, const Person& b) {
-                return ascending ? (a.getId() < b.getId()) : (a.getId() > b.getId());
-            });
+int compareDescendingShipment(const void* a, const void* b)
+{
+    Shipment* shipmentA = (Shipment*)a;
+    Shipment* shipmentB = (Shipment*)b;
+    return strcmp(shipmentA->ShipmentId, shipmentB->ShipmentId);
+}
+
+int compareAscendingShipment(const void* a, const void* b)
+{
+    Shipment* shipmentA = (Shipment*)a;
+    Shipment* shipmentB = (Shipment*)b;
+    return strcmp(shipmentB->ShipmentId, shipmentA->ShipmentId);
+}
+
+void sortShipmentsById(int ascending)
+{
+    if (ascending) {
+        qsort(Shipments, ShipmentsCount, sizeof(Shipment), compareAscendingShipment);
+    } else {
+        qsort(Shipments, ShipmentsCount, sizeof(Shipment), compareDescendingShipment);
+    }
+}
+
+int compareAscendingShipmentDate(const void* a, const void* b)
+{
+    Shipment* shipmentA = (Shipment*)a;
+    Shipment* shipmentB = (Shipment*)b;
+    if(shipmentA->sendDate.year != shipmentB->sendDate.year)
+        return shipmentA->sendDate.year < shipmentB->sendDate.year;
+    if(shipmentA->sendDate.month != shipmentB->sendDate.month)
+        return shipmentA->sendDate.month < shipmentB->sendDate.month;
+    return shipmentA->sendDate.day < shipmentB->sendDate.day;
+}
+
+int compareDescendingShipmentDate(const void* a, const void* b)
+{
+    Shipment* shipmentA = (Shipment*)a;
+    Shipment* shipmentB = (Shipment*)b;
+    if(shipmentA->sendDate.year != shipmentB->sendDate.year)
+        return shipmentA->sendDate.year > shipmentB->sendDate.year;
+    if(shipmentA->sendDate.month != shipmentB->sendDate.month)
+        return shipmentA->sendDate.month > shipmentB->sendDate.month;
+    return shipmentA->sendDate.day > shipmentB->sendDate.day;
+}
+
+void sortShipmentsByDate(int ascending)
+{
+    if (ascending) {
+        qsort(Shipments, ShipmentsCount, sizeof(Shipment), compareAscendingShipmentDate);
+    } else {
+        qsort(Shipments, ShipmentsCount, sizeof(Shipment), compareDescendingShipmentDate);
+    }
+}
+
+void exportToFileShipment(const char* filename)
+{
+    FILE* outFile;
+    errno_t err = fopen_s(&outFile, filename, "w");
+    if (err != 0 || !outFile) {
+        fprintf(stderr, "Could not open the file!\n");
         return;
     }
 
-    void Management::exportToFile(const std::vector<Person>& list, const std::string& filename, const std::string& role) {
-        std::ofstream outFile(filename);
-        if (!outFile.is_open()) {
-            std::cerr << "Could not open the file!" << std::endl;
-            return;
-        }
-        outFile << role << ":\n";
-        outFile << "==============================\n";
-        for (const auto& person : list) {
-            person.exportData(outFile);
+    fprintf(outFile, "Shipments:\n");
+    fprintf(outFile, "==============================\n");
+    for (int i = 0; i < ShipmentsCount; ++i) {
+        fprintf(outFile, "Shipment ID: %d\n", Shipments[i].ShipmentId);
+        fprintf(outFile, "Goods Info: %s\n", Shipments[i].goodsInfo);
+        fprintf(outFile, "Send Date: %s\n", dateToString(Shipments[i].sendDate));
+        fprintf(outFile, "Receice Date: %s\n", dateToString(Shipments[i].receiveDate));
+        fprintf(outFile, "Id Sender: %s\n", Shipments[i].sender.id);
+        fprintf(outFile, "Name Sender: %s\n", Shipments[i].sender.name);
+        fprintf(outFile, "Address Sender: %s\n", Shipments[i].sender.address);
+        fprintf(outFile, "Tel Sender: %s\n", Shipments[i].sender.tel);
+        fprintf(outFile, "Id Receiver: %s\n", Shipments[i].receiver.id);
+        fprintf(outFile, "Name Receiver: %s\n", Shipments[i].receiver.name);
+        fprintf(outFile, "Address Receiver: %s\n", Shipments[i].receiver.address);
+        fprintf(outFile, "Tel Receiver: %s\n", Shipments[i].receiver.tel);
+        fprintf(outFile, "-----------------------------\n");
+    }
+
+    fclose(outFile);
+}
+
+void setShipperStatus()
+{
+    system("CLS");
+    char id[50];
+    printf("Enter Shipper ID to update status: ");
+    scanf_s("%99s", id, (unsigned)_countof(id));
+
+    int found = 0;
+    for (int i = 0; i < shippersCount; i++) {
+        if (strcmp(shippers[i].shipperId, id) == 0) {
+            printf("Enter new Shipper Status: ReadyToDeliver (0) / Delivering (1): ");
+            int newStatus;
+            scanf_s("%d", &newStatus);
+            shippers[i].shipperStatus = (ShipperStatus)newStatus;
+            printf("Shipper with ID %s's status updated successfully!\n", id);
+            system("pause");
+            found = 1;
+            break;
         }
     }
-    //---------//
-    void Management::addShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
-        system("CLS");
-        int status, pstatus;
-        std::string goods, ShipmentId, senderId, receiverId;
-        Date sDate, rDate;
 
-        std::cout << "Enter the information for new Shipment" << std::endl;
-
-        auto findPersonById = [](std::vector<Person>& persons, std::string id) -> Person& {
-            for (auto& person : persons) {
-                if (person.getId() == id) {
-                    return person;
-                }
-            }
-            throw std::runtime_error("Person with ID not found.");
-        };
-
-        auto findShipmentById = [&list](std::string id) -> bool {
-            for (auto& Shipment : list) {
-                if (Shipment.getShipmentId() == id) {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        std::cout << "Enter the Sender ID: ";
-        std::cin >> senderId;
-
-        Person* sender = nullptr;
-        try {
-            sender = &findPersonById(senders, senderId);
-        }
-        catch (const std::runtime_error& e) {
-            std::cerr << e.what() << std::endl;
-            system("pause");
-            return;
-        }
-
-        std::cout << "Enter the Receiver ID: ";
-        std::cin >> receiverId;
-
-        Person* receiver = nullptr;
-        try {
-            receiver = &findPersonById(receivers, receiverId);
-        }
-        catch (const std::runtime_error& e) {
-            std::cerr << e.what() << std::endl;
-            system("pause");
-            return;
-        }
-
-        std::cout << "Enter the Shipment ID: ";
-        std::cin >> ShipmentId;
-
-        if (findShipmentById(ShipmentId)) {
-            std::cerr << "Shipment with ID " << ShipmentId << " already exists." << std::endl;
-            system("pause");
-            return;
-        }
-
-        std::cout << "Send Date (day month year): "; std::cin >> sDate.day >> sDate.month >> sDate.year;
-        std::cout << "Receive Date (day month year): "; std::cin >> rDate.day >> rDate.month >> rDate.year;
-        std::cin.ignore();
-        std::cout << "Goods information: "; std::getline(std::cin, goods);
-        std::cout << "Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): "; std::cin >> status;
-        std::cout << "Payment Status: Unpaid (0) / Paid (1): "; std::cin >> pstatus;
-
-        Shipment newShipment(ShipmentId, sDate, rDate, *sender, *receiver, goods, static_cast<ShipmentStatus>(status), static_cast<PaymentStatus>(pstatus));
-        list.push_back(newShipment);
-
-        sender->totalShipments++;
-        receiver->totalShipments++;
-
-        std::cout << "Shipment added successfully!" << std::endl;
+    if (!found) {
+        printf("Shipper with ID %s not found!\n", id);
         system("pause");
     }
+}
 
-    void Management::printAllShipments(const std::vector<Shipment> list) const {
-        system("CLS");
-        std::cout << "All Shipments:\n";
-        for (const auto& Shipment : list) {
-            Shipment.displayShipment();
-        }
-        system("pause");
-    }
-
-    void Management::deleteShipment(std::vector<Shipment>& list, std::vector<Person>& senders, std::vector<Person>& receivers) {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter Shipment ID to delete: ";
-        std::cin >> id;
-
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& o) { return o.getShipmentId() == id; });
-
-        if (it != list.end()) {
-
-            auto findPersonById = [](std::vector<Person>& persons, std::string id) -> Person& {
-                for (auto& person : persons) {
-                    if (person.getId() == id) {
-                        return person;
-                    }
-                }
-                throw std::runtime_error("Person with ID not found.");
-            };
-
-            Person* sender = nullptr;
-            try {
-                sender = &findPersonById(senders, it->sender.id);
-            }
-            catch (const std::runtime_error& e) {
-                std::cerr << e.what() << std::endl;
-                system("pause");
-                return;
-            }
-
-            Person* receiver = nullptr;
-            try {
-                receiver = &findPersonById(receivers, it->receiver.id);
-            }
-            catch (const std::runtime_error& e) {
-                std::cerr << e.what() << std::endl;
-                system("pause");
-                return;
-            }
-
-            sender->totalShipments--;
-            receiver->totalShipments--;
-
-            list.erase(it);
-            std::cout << "Shipment with ID " << id << " deleted successfully!\n";
-            system("pause");
-        }
-        else {
-            std::cout << "Shipment with ID " << id << " does not exist.\n";
-            system("pause");
-        }
-    }
-
-    void Management::updateShipment(std::vector<Shipment>& list) {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter Shipment ID to update: ";
-        std::cin >> id;
-
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& o) { return o.ShipmentId == id; });
-
-        if (it != list.end()) {
-            int choice;
-            bool updateAgain = true;
-
-            while (updateAgain) {
-                system("CLS");
-                std::cout << "\nSelect field to update for Shipment ID " << id << ":" << std::endl;
-                std::cout << "1. Send Date\n";
-                std::cout << "2. Receive Date\n";
-                std::cout << "3. Status\n";
-                std::cout << "4. Payment Status\n";
-                std::cout << "5. Goods Info\n";
-                std::cout << "6. Exit update\n";
-                std::cout << "Enter your choice: ";
-                std::cin >> choice;
-
-                switch (choice) {
-                case 1: {
-                    // Update Send Date
-                    Date newSendDate;
-                    std::cout << "Enter new Send Date (day month year): ";
-                    std::cin >> newSendDate.day >> newSendDate.month >> newSendDate.year;
-                    it->sendDate = newSendDate;
-                    std::cout << "Shipment with ID " << id << "'s Send Date updated successfully!" << std::endl;
-                    system("pause");
-                    break;
-                }
-                case 2: {
-                    // Update Receive Date
-                    Date newReceiveDate;
-                    std::cout << "Enter new Receive Date (day month year): ";
-                    std::cin >> newReceiveDate.day >> newReceiveDate.month >> newReceiveDate.year;
-                    it->receiveDate = newReceiveDate;
-                    std::cout << "Shipment with ID " << id << "'s Receive Date updated successfully!" << std::endl;
-                    system("pause");
-                    break;
-                }
-                case 3: {
-                    std::cout << "Enter new Shipment Status: Pending (0) / InTransit (1) / Delivered (2) / Returned (3): ";
-                    int statusChoice; std::cin >> statusChoice; it->status = static_cast<ShipmentStatus>(statusChoice);
-                    std::cout << "Shipment with ID " << id << "'s Status updated successfully!" << std::endl;
-                    system("pause");
-                    break;
-                }
-                case 4: {
-                    std::cout << "Enter new Payment Status: Unpaid (0) / Paid (1): ";
-                    int pstatusChoice; std::cin >> pstatusChoice; it->paymentStatus = static_cast<PaymentStatus>(pstatusChoice);
-                    std::cout << "Shipment with ID " << id << "'s Payment Status updated successfully!" << std::endl;
-                    system("pause");
-                    break;
-                }
-                case 5: {
-                    std::string newGoodsInfo;
-                    std::cout << "Enter new Goods Info: ";
-                    std::cin.ignore();
-                    std::getline(std::cin, newGoodsInfo);
-                    it->goodsInfo = newGoodsInfo;
-                    std::cout << "Shipment with ID " << id << "'s Goods Info updated successfully!" << std::endl;
-                    system("pause");
-                    break;
-                }
-                case 6:
-                    updateAgain = false;
-                    break;
-                default:
-                    std::cout << "Invalid choice. Please try again." << std::endl;
-                }
-            }
-            std::cout << "Shipment with ID " << id << " updated successfully!" << std::endl;
-        }
-        else {
-            std::cout << "Shipment with ID " << id << " not found!" << std::endl;
-            system("pause");
-        }
-    }
-
-    void Management::findShipment(std::vector<Shipment>& list) const {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter Shipment ID to find: ";
-        std::cin >> id;
-
-        auto it = std::find_if(list.begin(), list.end(), [id](const Shipment& o) {
-            return o.getShipmentId() == id;
-            });
-
-        if (it != list.end()) {
-            it->displayShipment();
-            system("pause");
-        }
-        else {
-            std::cout << "Shipment with ID " << id << " does not exist. Returning to main menu.\n";
-            system("pause");
-        }
-    }
-
-    void Management::exportToFileShipment(const std::vector<Shipment>& list, std::string filename, std::vector<Person>& senders, std::vector<Person>& receivers) {
-        std::ofstream outFile(filename);
-        if (!outFile.is_open()) {
-            std::cerr << "Could not open the file!" << std::endl;
-            return;
-        }
-        outFile << "ShipmentS" << "\n";
-        outFile << "==============================\n";
-        for (const auto& Shipment : list) {
-            Shipment.exportDataShipment(outFile);
-        }
-    }
-
-    void Management::sortShipmentsById(std::vector<Shipment>& list, bool ascending ) {
-        std::sort(list.begin(), list.end(),
-            [ascending](const Shipment& a, const Shipment& b) {
-                return ascending ? (a.ShipmentId < b.ShipmentId) : (a.ShipmentId > b.ShipmentId);
-            });
+void exportToFileShipper(const char* filename)
+{
+    FILE* outFile;
+    errno_t err = fopen_s(&outFile, filename, "w");
+    if (err != 0 || !outFile) {
+        fprintf(stderr, "Could not open the file!\n");
         return;
     }
 
-    int compareDates(const Date& d1, const Date& d2) {
-    if (d1.year != d2.year) return d1.year < d2.year;
-    if (d1.month != d2.month) return d1.month < d2.month;
-    return d1.day < d2.day;
+    fprintf(outFile, "SHIPPER\n");
+    fprintf(outFile, "=================================\n");
+    for (int i = 0; i < shippersCount; ++i) {
+        fprintf(outFile, "Shipper ID: %s\n", shippers[i].shipperId);
+        fprintf(outFile, "Shipper Name: %s\n", shippers[i].name);
+        fprintf(outFile, "Shipper Status: %d\n", shippers[i].shipperStatus);
+        fprintf(outFile, "-----------------------------\n");
+    }
+
+    fclose(outFile);
 }
 
-    void Management::sortShipmentsByDate(std::vector<Shipment>& Shipments, bool ascending) {
-    std::sort(Shipments.begin(), Shipments.end(), [this, ascending](const Shipment& a, const Shipment& b) {
-        return ascending ? compareDates(a.getSendDate(), b.getSendDate()) : compareDates(b.getSendDate(), a.getSendDate());
-    });
+void printAllShippers(Shipper* shippers, int shippersCount) {
+    system("CLS");
+    printf("%-10s %-20s %-16s %-20s\n", "ID", "Name", "Tel", "Shipper Status");
+    printf("%s\n", "---------------------------------------------------------------------------------");
+
+    for (int i = 0; i < shippersCount; ++i) {
+        printf("%-10s %-20s %-16s %-20s\n",
+            shippers[i].shipperId,
+            shippers[i].name,
+            shippers[i].tel,
+            shippers[i].shipperStatus == ReadyToDeliver ? "ReadyToDeliver" :
+            shippers[i].shipperStatus == Delivering ? "Delivering" : "Unknown");
+    }
+    system("pause");
 }
-    //---------//
-    void Management::printAllShippers(const std::vector<Shipper>& list) const {
-        system("CLS");
-        std::cout << std::left
-            << std::setw(10) << "ID"
-            << std::setw(20) << "Name"
-            << std::setw(16) << "Tel"
-            << std::setw(10) << "Shipper Status" << std::endl;
-        std::cout << std::string(81, '-');
-        std::cout << "\n";
-        for (const auto& person : list) {
-            person.displayShipper();
-        }
-        system("pause");
-    }
 
-    void Management::setShipperStatus(std::vector<Shipper>& shippers) {
-        system("CLS");
-        std::string id;
-        std::cout << "Enter Shipper ID to update status: ";
-        std::cin >> id;
+void addSenders() {
+    if (sendersCount < 100) senders[sendersCount++] = Person{"John Smith", "Hometown", "002", "0123456789", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Emily Johnson", "Springfield", "003", "0987654321", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Michael Brown", "Lakeview", "004", "0765432109", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Sarah Davis", "Meadow Hills", "005", "0456789123", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Daniel Wilson", "Pine Grove", "006", "0543219876", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Jessica Martinez", "Sunset Valley", "007", "0678912345", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Christopher Garcia", "Riverbend", "008", "0890123456", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Amanda Rodriguez", "Clearwater", "009", "0987654321", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"James Miller", "Cedar Ridge", "010", "0102030405", 0};
+    if (sendersCount < 100) senders[sendersCount++] = Person{"Ashley Jackson", "Oakwood", "011", "0112233445", 0};
+}
 
-        auto it = std::find_if(shippers.begin(), shippers.end(), [id](const Shipper& o) { return o.shipperId == id; });
-        if (it != shippers.end()) {
-            std::cout << "Enter new Shipper Status: ReadyToDeliver (0) / Delivering (1): ";
-            int newStatus; std::cin >> newStatus; it->shipperStatus = static_cast<ShipperStatus>(newStatus);
-            std::cout << "Shipper with ID " << id << "'s status updated successfully!" << std::endl;
-            system("pause");
-        }
-        else {
-            std::cout << "Shipment with ID " << id << " not found!" << std::endl;
-            system("pause");
-        }
-    }
+void addReceivers() {
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Matthew White", "Green Acres", "012", "0123245678", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Elizabeth Lopez", "Golden Heights", "013", "0133456789", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Joshua Hill", "Willow Creek", "014", "0144567890", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Lauren Scott", "Silver Springs", "015", "0155678901", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Andrew King", "Maple Grove", "016", "0166789012", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Olivia Young", "Peachtree", "017", "0177890123", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Ryan Clark", "Hillcrest", "018", "0188901234", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Sophia Lewis", "Birchwood", "019", "0199012345", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"David Walker", "Lakeside", "020", "0200123456", 0};
+    if (receiversCount < 100) receivers[receiversCount++] = Person{"Grace Hall", "Valley View", "021", "0211234567", 0};
+}
 
-    void Management::exportToFileShipper(const std::vector<Shipper>& shippers, std::string filename) {
-        std::ofstream outFile(filename);
-        if (!outFile.is_open()) {
-            std::cerr << "Could not open the file!" << std::endl;
-            return;
-        }
-        outFile << "SHIPPER" << "\n";
-        outFile << "=================================\n";
-        for (const auto& shipper : shippers) {
-            shipper.exportDataShipper(outFile);
-        }
-    }
-
-    void Management::addSenders() {
-        senders.push_back(Person("John Smith", "Hometown", "002", "0123456789", 0));
-        senders.push_back(Person("Emily Johnson", "Springfield", "003", "0987654321", 0));
-        senders.push_back(Person("Michael Brown", "Lakeview", "004", "0765432109", 0));
-        senders.push_back(Person("Sarah Davis", "Meadow Hills", "005", "0456789123", 0));
-        senders.push_back(Person("Daniel Wilson", "Pine Grove", "006", "0543219876", 0));
-        senders.push_back(Person("Jessica Martinez", "Sunset Valley", "007", "0678912345", 0));
-        senders.push_back(Person("Christopher Garcia", "Riverbend", "008", "0890123456", 0));
-        senders.push_back(Person("Amanda Rodriguez", "Clearwater", "009", "0987654321", 0));
-        senders.push_back(Person("James Miller", "Cedar Ridge", "010", "0102030405", 0));
-        senders.push_back(Person("Ashley Jackson", "Oakwood", "011", "0112233445", 0));
-    }
-    void Management::addReceivers() {
-        receivers.push_back(Person("Matthew White", "Green Acres", "012", "0123245678", 0));
-        receivers.push_back(Person("Elizabeth Lopez", "Golden Heights", "013", "0133456789", 0));
-        receivers.push_back(Person("Joshua Hill", "Willow Creek", "014", "0144567890", 0));
-        receivers.push_back(Person("Lauren Scott", "Silver Springs", "015", "0155678901", 0));
-        receivers.push_back(Person("Andrew King", "Maple Grove", "016", "0166789012", 0));
-        receivers.push_back(Person("Olivia Young", "Peachtree", "017", "0177890123", 0));
-        receivers.push_back(Person("Ryan Clark", "Hillcrest", "018", "0188901234", 0));
-        receivers.push_back(Person("Sophia Lewis", "Birchwood", "019", "0199012345", 0));
-        receivers.push_back(Person("David Walker", "Lakeside", "020", "0200123456", 0));
-        receivers.push_back(Person("Grace Hall", "Valley View", "021", "0211234567", 0));
-    }
-    void Management::addShipper() {
-        shippers.push_back(Shipper("Nguyen Viet Anh", "01", "0866986596", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Thanh Thuy", "02", "0123888888", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Cong Tai", "03", "0234999999", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Thi Tu", "04", "0345777777", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Anh Tai", "05", "0456111111", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Viet Tu", "06", "0567222222", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Cong Thanh", "07", "0678333333", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Phung Viet Thuy", "08", "0789444444", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Tran Thi Anh", "09", "0866555555", ShipperStatus::ReadyToDeliver));
-        shippers.push_back(Shipper("Nguyen Thanh Tu", "10", "9999999999", ShipperStatus::ReadyToDeliver));
-    }
-
-    
+void addShippers() {
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Nguyen Viet Anh", "01", "0866986596", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Phung Thanh Thuy", "02", "0123888888", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Tran Cong Tai", "03", "0234999999", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Nguyen Thi Tu", "04", "0345777777", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Phung Anh Tai", "05", "0456111111", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Tran Viet Tu", "06", "0567222222", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Nguyen Cong Thanh", "07", "0678333333", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Phung Viet Thuy", "08", "0789444444", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Tran Thi Anh", "09", "0866555555", ReadyToDeliver};
+    if (shippersCount < 100) shippers[shippersCount++] = Shipper{"Nguyen Thanh Tu", "10", "9999999999", ReadyToDeliver};
+}

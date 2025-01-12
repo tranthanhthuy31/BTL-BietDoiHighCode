@@ -1,15 +1,9 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <iomanip>
-#include <fstream>
-#include"Display.cpp"
-int main() {
-    Management manager;
-    manager.addShipper(); //example
-    manager.addSenders(); //example
-    manager.addReceivers(); //example
-    displayMenuManagement(manager);
+#include "Display.h"
+
+int main(){
+    addSenders();
+    addReceivers();
+    addShippers();
+    displayMenuManagement();
     return 0;
 }
